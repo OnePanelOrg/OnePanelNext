@@ -1,12 +1,17 @@
-# Create T3 App
+# OnePanelNext
+
+OnePanel is an app that allow you to read your favorite Manga, one panel at a time
+
+We belive in this new reading experience, in between the old Manga reading and watching an Anime
+
+The panels will be displayed one by one, allowing the reader to dedicate the right amount of time to each panel, without spoiling the rest of the page!
+
+## Technologies
+OnePanelNext is a complete rewrite of the OnePanel project in Next.js
+This will allow a future proofing of the project and *maybe* an increased number of contribution
+
 
 This is a [T3 Stack](https://create.t3.gg/) project bootstrapped with `create-t3-app`.
-
-## What's next? How do I make an app with this?
-
-We try to keep this project as simple as possible, so you can start with just the scaffolding we set up for you, and add additional things later when they become necessary.
-
-If you are not familiar with the different technologies used in this project, please refer to the respective docs. If you still are in the wind, please join our [Discord](https://t3.gg/discord) and ask for help.
 
 - [Next.js](https://nextjs.org)
 - [NextAuth.js](https://next-auth.js.org)
@@ -14,15 +19,6 @@ If you are not familiar with the different technologies used in this project, pl
 - [Tailwind CSS](https://tailwindcss.com)
 - [tRPC](https://trpc.io)
 
-## Learn More
-
-To learn more about the [T3 Stack](https://create.t3.gg/), take a look at the following resources:
-
-- [Documentation](https://create.t3.gg/)
-- [Learn the T3 Stack](https://create.t3.gg/en/faq#what-learning-resources-are-currently-available) — Check out these awesome tutorials
-
-You can check out the [create-t3-app GitHub repository](https://github.com/t3-oss/create-t3-app) — your feedback and contributions are welcome!
-
 ## How do I deploy this?
 
-Follow our deployment guides for [Vercel](https://create.t3.gg/en/deployment/vercel) and [Docker](https://create.t3.gg/en/deployment/docker) for more information.
+Will likely deploy on [Vercel](https://create.t3.gg/en/deployment/vercel)
