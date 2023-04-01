@@ -36,8 +36,6 @@ const ImageCanvas = ({ data }) => {
                 return prevIndex + 1
             }
         });
-        // console.log(currentPanelIndex)
-        // setCurrentPanelIndex((prevIndex) => (prevIndex === panelsInThisPage - 1 ? 0 : prevIndex + 1));
     }
 
     // handle arrow keys
@@ -108,7 +106,14 @@ const ImageCanvas = ({ data }) => {
     }, [currentPageIndex, currentPanelIndex, images]);
 
     return (
-        <canvas id="image-canvas" ref={canvasRef} width={window.innerWidth} height={window.innerHeight}></canvas>
+        <>
+            {/* <ol className='pagination'>
+                {data.pages.map((p, index) => (
+                    <li><a href={"#" + string((index + 1 < 10) ? '0' + (index + 1) : index + 1) + "-01"} className='pagination-link' data-index={index}>{index}</a></li>
+                ))}
+            </ol> */}
+            <canvas id="image-canvas" ref={canvasRef} width={window.innerWidth} height={window.innerHeight}></canvas>
+        </>
     );
 };
 export default ImageCanvas;

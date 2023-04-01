@@ -1,6 +1,6 @@
 import { type NextPage } from "next";
 import Head from "next/head";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import ImageCanvas from "../components/ImageCanvas";
 
 
@@ -31,7 +31,10 @@ const Home: NextPage = () => {
       </Head>
       <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#15162c]">
         {/* todo: center canvas */}
-        {data && !isLoading && <ImageCanvas data={data}></ImageCanvas>}
+        <div>
+          {data && !isLoading && <ImageCanvas data={data}></ImageCanvas>}
+        </div>
+
       </main>
     </>
   );
