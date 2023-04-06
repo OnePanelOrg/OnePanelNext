@@ -26,7 +26,8 @@
     "**/*.tsx",
     "**/*.cjs",
     "**/*.mjs",
-    "src/reader.js"
+    "src/reader.js",
+    "src/components/InputForm.js"
   ],
   "exclude": [
     "node_modules"

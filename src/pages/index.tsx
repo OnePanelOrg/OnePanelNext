@@ -1,26 +1,9 @@
 import { type NextPage } from "next";
 import Head from "next/head";
-import { useEffect, useState } from "react";
-import ImageCanvas from "../components/ImageCanvas";
+import Link from "next/link";
 
 
 const Home: NextPage = () => {
-  const [data, setData] = useState(null)
-  const [isLoading, setLoading] = useState(false)
-
-  useEffect(() => {
-    setLoading(true)
-    // todo: get link fro user and do a request to get the json data
-    fetch("output.json")
-      .then((res) => res.json())
-      .then((data) => {
-        setData(data)
-        setLoading(false)
-      })
-  }, []);
-
-  if (isLoading) return <p>Loading...</p>
-  if (!data) return <p>No data</p>
 
   return (
     <>
@@ -32,7 +15,13 @@ const Home: NextPage = () => {
       <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#15162c]">
         {/* todo: center canvas */}
         <div>
-          {data && !isLoading && <ImageCanvas data={data}></ImageCanvas>}
+
+          <Link
+            className="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+            href={"/canvas"}
+          >
+            <h1>Let's Go!</h1>
+          </Link>
         </div>
 
       </main>
