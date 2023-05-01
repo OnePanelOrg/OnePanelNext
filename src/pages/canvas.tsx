@@ -13,7 +13,7 @@ const Canvas: NextPage = () => {
         console.log("fetching")
         setLoading(true)
 
-        const url = ""
+        const url = `${process.env.SERVER_URL}:${process.env.SERVER_PORT}/chapter`
         fetch(url, {
             method: "POST",
             body: JSON.stringify({ content: chapter_url }),
@@ -26,6 +26,9 @@ const Canvas: NextPage = () => {
                 setData(data)
                 setLoading(false)
             })
+        // .catch(rejected => {
+        //     console.log(rejected);
+        // });
     }
 
     async function dummy_postUrl() {
@@ -64,7 +67,7 @@ const Canvas: NextPage = () => {
             </Head>
             <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#15162c]">
                 {/* todo: center canvas */}
-                {!data && <InputForm childToParent={dummy_postUrl}></InputForm>}
+                {!data && <InputForm childToParent={postUrl}></InputForm>}
                 {isLoading && <p>Loading...</p>}
                 <div>
                     {/* {!data && <p>No data</p>} */}
