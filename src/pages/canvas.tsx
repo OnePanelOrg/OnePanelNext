@@ -14,6 +14,8 @@ const Canvas: NextPage = () => {
         setLoading(true)
 
         const url = `${process.env.SERVER_URL}:${process.env.SERVER_PORT}/chapter`
+        console.log(url)
+
         fetch(url, {
             method: "POST",
             body: JSON.stringify({ content: chapter_url }),
