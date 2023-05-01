@@ -13,7 +13,8 @@ const Canvas: NextPage = () => {
         console.log("fetching")
         setLoading(true)
 
-        const url = `${process.env.SERVER_URL}:${process.env.SERVER_PORT}/chapter`
+        // const url = `${process.env.SERVER_URL}:${process.env.SERVER_PORT}/chapter`
+        const url = `http://ec2-3-121-195-73.eu-central-1.compute.amazonaws.com:8000/chapter`
         console.log(url)
 
         fetch(url, {
