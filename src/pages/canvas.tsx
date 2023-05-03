@@ -18,6 +18,10 @@ const Canvas: NextPage = () => {
         console.log(url)
 
         fetch(url, {
+            mode: 'cors',
+            headers: {
+                'Access-Control-Allow-Origin': '*'
+            },
             method: "POST",
             body: JSON.stringify({ content: chapter_url }),
             headers: {
