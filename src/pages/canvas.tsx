@@ -14,7 +14,7 @@ const Canvas: NextPage = () => {
         setLoading(true)
 
         // const url = `${process.env.SERVER_URL}:${process.env.SERVER_PORT}/chapter`
-        const url = `http://ec2-3-121-195-73.eu-central-1.compute.amazonaws.com:8000/chapter`
+        const url = `api.onepanel.app/chapter`
         console.log(url)
 
         fetch(url, {
