@@ -11,25 +11,25 @@ const Canvas: NextPage = () => {
 
     async function postUrl(chapter_url: string) {
         console.log("fetching")
+        console.log("chapter_url", chapter_url)
         setLoading(true)
 
         // const url = `${process.env.SERVER_URL}:${process.env.SERVER_PORT}/chapter`
+        // https://onepiecechapters.com/chapters/5613/one-piece-chapter-1073
         const url = `https://api.onepanel.app/chapter`
-        console.log(url)
 
         fetch(url, {
             mode: 'cors',
-            headers: {
-                'Access-Control-Allow-Origin': '*'
-            },
             method: "POST",
-            body: JSON.stringify({ content: chapter_url }),
+            body: JSON.stringify({ chapter_url: chapter_url }),
             headers: {
+                "Access-Control-Allow-Origin": "*",
                 "Content-Type": "application/json"
             }
         })
             .then((res) => res.json())
             .then((data) => {
+                console.log(data)
                 setData(data)
                 setLoading(false)
             })
@@ -38,18 +38,18 @@ const Canvas: NextPage = () => {
         // });
     }
 
-    async function dummy_postUrl() {
-        console.log("dummy fetching")
-        setLoading(true)
+    // async function dummy_postUrl() {
+    //     console.log("dummy fetching")
+    //     setLoading(true)
 
-        // todo: get link fro user and do a request to get the json data
-        fetch("output.json")
-            .then((res) => res.json())
-            .then((data) => {
-                setData(data)
-                setLoading(false)
-            })
-    }
+    //     // todo: get link fro user and do a request to get the json data
+    //     fetch("output.json")
+    //         .then((res) => res.json())
+    //         .then((data) => {
+    //             setData(data)
+    //             setLoading(false)
+    //         })
+    // }
 
     // useEffect(() => {
     //     setLoading(true)
@@ -75,7 +75,8 @@ const Canvas: NextPage = () => {
             </Head>
             <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#15162c]">
                 {/* todo: center canvas */}
-                {!data && <InputForm childToParent={postUrl}></InputForm>}
+                {!isLoading && !data && <InputForm childToParent={postUrl}></InputForm>}
+                {/* OFCOURSE we need a better loading state */}
                 {isLoading && <p>Loading...</p>}
                 <div>
                     {/* {!data && <p>No data</p>} */}
