@@ -38,18 +38,32 @@ const Canvas: NextPage = () => {
         // });
     }
 
-    async function dummy_postUrl() {
-        console.log("dummy fetching")
-        setLoading(true)
+    // async function dummy_postUrl() {
+    //     console.log("dummy fetching")
+    //     setLoading(true)
 
-        // todo: get link fro user and do a request to get the json data
-        fetch("output.json")
-            .then((res) => res.json())
-            .then((data) => {
-                setData(data)
-                setLoading(false)
-            })
-    }
+    //     // todo: get link fro user and do a request to get the json data
+    //     fetch("output.json")
+    //         .then((res) => res.json())
+    //         .then((data) => {
+    //             setData(data)
+    //             setLoading(false)
+    //         })
+    // }
+
+    // useEffect(() => {
+    //     setLoading(true)
+    //     // todo: get link fro user and do a request to get the json data
+    //     fetch("output.json")
+    //         .then((res) => res.json())
+    //         .then((data) => {
+    //             setData(data)
+    //             setLoading(false)
+    //         })
+    // }, []);
+
+    // if (isLoading) return <p>Loading...</p>
+    // if (!data) return <p>No data</p>
 
     return (
         <>
@@ -61,7 +75,7 @@ const Canvas: NextPage = () => {
             </Head>
             <main className="flex h-full flex-col items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#15162c]">
                 {/* todo: center canvas */}
-                {!isLoading && !data && <InputForm childToParent={dummy_postUrl}></InputForm>}
+                {!isLoading && !data && <InputForm childToParent={postUrl}></InputForm>}
                 {/* OFCOURSE we need a better loading state */}
                 {isLoading && <p>Loading...</p>}
                 <div className="container" id="container">
