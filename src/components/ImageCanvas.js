@@ -54,6 +54,15 @@ const ImageCanvas = ({ data }) => {
         };
     }, [currentPanelIndex, images]);
 
+    function setCanvasSize(canvas) {
+        var parent = canvas.parentNode,
+            styles = getComputedStyle(parent),
+            w = parseInt(styles.getPropertyValue("width"), 10),
+            h = parseInt(styles.getPropertyValue("height"), 10);
+        canvas.width = w;
+        canvas.height = h;
+    }
+
     // draw things
     useEffect(() => {
         let panels_in_this_page = data.pages[currentPageIndex].panels.length;
@@ -61,47 +70,70 @@ const ImageCanvas = ({ data }) => {
         setpanelsInThisPage(panels_in_this_page)
 
         const ctx = canvasRef.current.getContext('2d');
+        // setCanvasSize(ctx.canvas)
+
+        // fitToContainer(canvasRef);
         ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
         if (images.length > 0) {
             const currentImage = images[currentPageIndex];
 
+            _drawPage(currentImage)
+            _drawPanels(currentImage);
+        }
+
+        function _drawPanels(currentImage) {
             const max = data.pages[currentPageIndex].panels.length;
             const panels_len = Math.min(Math.max(parseInt(currentPanelIndex + 1), 0), max);
 
             // Because of the way canvas works we need all panels up
             // to and including the desired one.
             for (var i = 0; i < panels_len; i++) {
+
                 // The path needs to be split in order to work with it.
-                const path = data.pages[currentPageIndex].panels[i].path.split(',');
-                const len = path.length;
-
-                ctx.save();
-
-                // First we draw a clipping path for the panel
-                ctx.beginPath();
-                for (var j = 0; j < len; j++) {
-                    const coards = path[j].trim().split(' ');
-
-                    // The svg path's coardinates commands need to be in pixels
-                    // instead of percentages. Svg path do not work with %s.
-                    const x = coards[0] * currentImage.width / currentImage.height * window.innerHeight / 100;
-                    const y = coards[1] * window.innerHeight / 100;
-
-                    // The first element in the path needs to
-                    // be the M(ove) command/
-                    if (len == 0) {
-                        ctx.moveTo(x, y);
-                    } else {
-                        ctx.lineTo(x, y);
-                    }
-                }
-                ctx.closePath();
-                ctx.clip();
-
-                ctx.drawImage(currentImage, 0, 0, currentImage.width / currentImage.height * window.innerHeight, window.innerHeight);
-
-                ctx.restore();
+                _drawPanel(currentImage, i);
             }
+        }
+
+        function _drawPanel(currentImage, i) {
+            const path = data.pages[currentPageIndex].panels[i].path.split(',');
+            const len = path.length;
+
+            ctx.save();
+
+            // First we draw a clipping path for the panel
+            ctx.beginPath();
+            for (var j = 0; j < len; j++) {
+                const coards = path[j].trim().split(' ');
+
+                // The svg path's coardinates commands need to be in pixels
+                // instead of percentages. Svg path do not work with %s.
+                const x = coards[0] * currentImage.width / currentImage.height * window.innerHeight / 100;
+                const y = coards[1] * window.innerHeight / 100;
+
+                // The first element in the path needs to
+                // be the M(ove) command/
+                if (len == 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+            }
+            ctx.closePath();
+            ctx.clip();
+
+            ctx.drawImage(currentImage, 0, 0, currentImage.width / currentImage.height * window.innerHeight, window.innerHeight);
+
+            ctx.restore();
+        }
+
+        function _drawPage(currentImage) {
+            ctx.save();
+            canvasRef.width = currentImage.width;
+            canvasRef.height = currentImage.height;
+            ctx.globalAlpha = 0.025;
+            ctx.drawImage(currentImage, 0, 0, currentImage.width / currentImage.height * window.innerHeight, window.innerHeight);
+            ctx.globalAlpha = 1;
+            ctx.restore();
         }
     }, [currentPageIndex, currentPanelIndex, images]);
 
