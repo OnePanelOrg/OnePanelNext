@@ -36,8 +36,10 @@ import "../styles/globals.css";
 const MyApp: AppType = ({ Component, pageProps }) => {
   return (
     <ClerkProvider {...pageProps} >
-      <Header />
-      <Component {...pageProps} />
+      <div className="h-screen">
+        <Header />
+        <Component {...pageProps} />
+      </div>
     </ClerkProvider>
   );
 };
