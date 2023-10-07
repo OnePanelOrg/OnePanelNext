@@ -36,7 +36,7 @@ import "../styles/globals.css";
 const MyApp: AppType = ({ Component, pageProps }) => {
   return (
     <ClerkProvider {...pageProps} >
-      <Header />
+      {/* <Header /> */}
       <Component {...pageProps} />
     </ClerkProvider>
   );

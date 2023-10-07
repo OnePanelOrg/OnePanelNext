@@ -26,16 +26,18 @@ const ImageCanvas = ({ data }) => {
         });
     }, []);
 
+    function changePage(){
+        setCurrentPanelIndex(0);
+        setCurrentPageIndex(currentPageIndex+1)
+    }
+
     function handleRightArrow() {
-        setCurrentPanelIndex((prevIndex) => {
-            if (prevIndex === panelsInThisPage - 1) {
-                console.log('Go to next page');
-                setCurrentPageIndex((prevIndex) => (prevIndex === images.length - 1 ? 0 : prevIndex + 1));
-                return 0;
-            } else {
-                return prevIndex + 1
-            }
-        });
+
+        if(currentPanelIndex >= panelsInThisPage-1 ){
+            return changePage()
+        }
+
+        return setCurrentPanelIndex(currentPanelIndex+1)
     }
 
     // handle arrow keys
@@ -63,10 +65,66 @@ const ImageCanvas = ({ data }) => {
         canvas.height = h;
     }
 
+    function _drawPanels(ctx, currentImage) {
+        const max = data.pages[currentPageIndex].panels.length;
+        const panels_len = Math.min(Math.max(parseInt(currentPanelIndex + 1), 0), max);
+
+        // Because of the way canvas works we need all panels up
+        // to and including the desired one.
+        for (var i = 0; i < panels_len; i++) {
+
+            // The path needs to be split in order to work with it.
+            _drawPanel(ctx, currentImage, i);
+        }
+    }
+
+    function _drawPanel(ctx, currentImage, i) {
+        console.log("printed", i+1, "/", panelsInThisPage)
+        const path = data.pages[currentPageIndex].panels[i].path.split(',');
+        const len = path.length;
+
+        ctx.save();
+
+        // First we draw a clipping path for the panel
+        ctx.beginPath();
+        for (var j = 0; j < len; j++) {
+            const coards = path[j].trim().split(' ');
+
+            // The svg path's coardinates commands need to be in pixels
+            // instead of percentages. Svg path do not work with %s.
+            const x = coards[0] * currentImage.width / currentImage.height * window.innerHeight / 100;
+            const y = coards[1] * window.innerHeight / 100;
+
+            // The first element in the path needs to
+            // be the M(ove) command/
+            if (len == 0) {
+                ctx.moveTo(x, y);
+            } else {
+                ctx.lineTo(x, y);
+            }
+        }
+        ctx.closePath();
+        ctx.clip();
+
+        ctx.drawImage(currentImage, 0, 0, currentImage.width / currentImage.height * window.innerHeight, window.innerHeight);
+
+        ctx.restore();
+    }
+
+    function _drawPage(ctx, currentImage) {
+        ctx.save();
+        canvasRef.width = currentImage.width;
+        canvasRef.height = currentImage.height;
+        ctx.globalAlpha = 0.025;
+        ctx.drawImage(currentImage, 0, 0, currentImage.width / currentImage.height * window.innerHeight, window.innerHeight);
+        ctx.globalAlpha = 1;
+        ctx.restore();
+    }
+
     // draw things
     useEffect(() => {
         let panels_in_this_page = data.pages[currentPageIndex].panels.length;
-        console.log("____panels_in_this_page", panels_in_this_page);
+        // console.log("____panels_in_this_page", panels_in_this_page);
         setpanelsInThisPage(panels_in_this_page)
 
         const ctx = canvasRef.current.getContext('2d');
@@ -77,74 +135,18 @@ const ImageCanvas = ({ data }) => {
         if (images.length > 0) {
             const currentImage = images[currentPageIndex];
 
-            _drawPage(currentImage)
-            _drawPanels(currentImage);
+            _drawPage(ctx, currentImage)
+            _drawPanels(ctx, currentImage);
         }
 
-        function _drawPanels(currentImage) {
-            const max = data.pages[currentPageIndex].panels.length;
-            const panels_len = Math.min(Math.max(parseInt(currentPanelIndex + 1), 0), max);
-
-            // Because of the way canvas works we need all panels up
-            // to and including the desired one.
-            for (var i = 0; i < panels_len; i++) {
-
-                // The path needs to be split in order to work with it.
-                _drawPanel(currentImage, i);
-            }
-        }
-
-        function _drawPanel(currentImage, i) {
-            const path = data.pages[currentPageIndex].panels[i].path.split(',');
-            const len = path.length;
-
-            ctx.save();
-
-            // First we draw a clipping path for the panel
-            ctx.beginPath();
-            for (var j = 0; j < len; j++) {
-                const coards = path[j].trim().split(' ');
-
-                // The svg path's coardinates commands need to be in pixels
-                // instead of percentages. Svg path do not work with %s.
-                const x = coards[0] * currentImage.width / currentImage.height * window.innerHeight / 100;
-                const y = coards[1] * window.innerHeight / 100;
-
-                // The first element in the path needs to
-                // be the M(ove) command/
-                if (len == 0) {
-                    ctx.moveTo(x, y);
-                } else {
-                    ctx.lineTo(x, y);
-                }
-            }
-            ctx.closePath();
-            ctx.clip();
-
-            ctx.drawImage(currentImage, 0, 0, currentImage.width / currentImage.height * window.innerHeight, window.innerHeight);
-
-            ctx.restore();
-        }
-
-        function _drawPage(currentImage) {
-            ctx.save();
-            canvasRef.width = currentImage.width;
-            canvasRef.height = currentImage.height;
-            ctx.globalAlpha = 0.025;
-            ctx.drawImage(currentImage, 0, 0, currentImage.width / currentImage.height * window.innerHeight, window.innerHeight);
-            ctx.globalAlpha = 1;
-            ctx.restore();
-        }
+        
     }, [currentPageIndex, currentPanelIndex, images]);
 
     return (
         <>
-            {/* <ol className='pagination'>
-                {data.pages.map((p, index) => (
-                    <li><a href={"#" + string((index + 1 < 10) ? '0' + (index + 1) : index + 1) + "-01"} className='pagination-link' data-index={index}>{index}</a></li>
-                ))}
-            </ol> */}
+        <div className='flex'>
             <canvas id="image-canvas" ref={canvasRef} width={window.innerWidth} height={window.innerHeight}></canvas>
+        </div>
         </>
     );
 };
