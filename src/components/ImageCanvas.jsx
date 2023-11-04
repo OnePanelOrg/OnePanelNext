@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import ImageCanvasControls from './ImageCanvasControls';
 
 const ImageCanvas = ({ data }) => {
     const canvasRef = useRef(null);
@@ -26,35 +27,48 @@ const ImageCanvas = ({ data }) => {
         });
     }, []);
 
-    function changePage(){
+
+    // useEffect(() => {
+    //     window.history.pushState(
+    //         null,
+    //         "",
+    //         `?page=${currentPageIndex}&panel=${currentPanelIndex}_${panelsInThisPage-1}`
+    //     );
+
+    // }, [currentPageIndex, currentPanelIndex]);
+
+    function nextPage() {
         setCurrentPanelIndex(0);
-        setCurrentPageIndex(currentPageIndex+1)
+        if (currentPageIndex === data.pages.length - 1) {
+            console.log("we are in the last page, now you will see page 0");
+            setCurrentPageIndex(0);
+        } else {
+            setCurrentPageIndex(currentPageIndex + 1);
+            setpanelsInThisPage(data.pages[currentPageIndex + 1].panels.length);
+        }
+    }
+
+    function previousPage(){
+        // TODO: change this to show all the panels of previous page
+        // setCurrentPanelIndex(images[currentPageIndex-1].length-1);
+        setCurrentPanelIndex(0);
+        setCurrentPageIndex(currentPageIndex-1);
+        return;
     }
 
     function handleRightArrow() {
-
-        if(currentPanelIndex >= panelsInThisPage-1 ){
-            return changePage()
+        if (currentPanelIndex >= panelsInThisPage - 1){
+            return nextPage();
         }
-
-        return setCurrentPanelIndex(currentPanelIndex+1)
+        return setCurrentPanelIndex(currentPanelIndex + 1);
     }
 
-    // handle arrow keys
-    useEffect(() => {
-        const handleKeyDown = (event) => {
-            if (event.key === 'ArrowLeft') {
-                // todo: fix loop
-                setCurrentPageIndex((prevIndex) => (prevIndex === 0 ? images.length - 1 : prevIndex - 1));
-            } else if (event.key === 'ArrowRight') {
-                handleRightArrow();
-            }
-        };
-        window.addEventListener('keydown', handleKeyDown);
-        return () => {
-            window.removeEventListener('keydown', handleKeyDown);
-        };
-    }, [currentPanelIndex, images]);
+    function handleLeftArrow() {
+        if(currentPanelIndex == 0 ){
+            return previousPage();
+        }
+        return setCurrentPanelIndex(currentPanelIndex - 1);
+    }
 
     function setCanvasSize(canvas) {
         var parent = canvas.parentNode,
@@ -79,7 +93,7 @@ const ImageCanvas = ({ data }) => {
     }
 
     function _drawPanel(ctx, currentImage, i) {
-        console.log("printed", i+1, "/", panelsInThisPage)
+        console.log("printing panel ", i+1, "/", panelsInThisPage)
         const path = data.pages[currentPageIndex].panels[i].path.split(',');
         const len = path.length;
 
@@ -124,11 +138,9 @@ const ImageCanvas = ({ data }) => {
     // draw things
     useEffect(() => {
         let panels_in_this_page = data.pages[currentPageIndex].panels.length;
-        // console.log("____panels_in_this_page", panels_in_this_page);
         setpanelsInThisPage(panels_in_this_page)
 
         const ctx = canvasRef.current.getContext('2d');
-        // setCanvasSize(ctx.canvas)
 
         // fitToContainer(canvasRef);
         ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
@@ -137,17 +149,21 @@ const ImageCanvas = ({ data }) => {
 
             _drawPage(ctx, currentImage)
             _drawPanels(ctx, currentImage);
-        }
-
-        
+        }        
     }, [currentPageIndex, currentPanelIndex, images]);
 
     return (
-        <>
         <div className='flex'>
             <canvas id="image-canvas" ref={canvasRef} width={window.innerWidth} height={window.innerHeight}></canvas>
+            <ImageCanvasControls
+                currentPageIndex={currentPageIndex}
+                currentPanelIndex={currentPanelIndex}
+                handleLeftArrow={handleLeftArrow}
+                handleRightArrow={handleRightArrow}
+                panelsInThisPage={panelsInThisPage}
+                imagesLenght={images.length}
+            ></ImageCanvasControls>
         </div>
-        </>
     );
 };
 export default ImageCanvas;
