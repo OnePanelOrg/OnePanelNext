@@ -17,6 +17,7 @@ const Canvas: NextPage = () => {
         // const url = `${process.env.SERVER_URL}:${process.env.SERVER_PORT}/chapter`
         // https://onepiecechapters.com/chapters/5613/one-piece-chapter-1073
         const url = `https://api.onepanel.app/chapter`
+        // const url = `http://localhost:8000/chapter`
 
         fetch(url, {
             mode: 'cors',
@@ -42,7 +43,6 @@ const Canvas: NextPage = () => {
         console.log("dummy fetching")
         setLoading(true)
 
-        // todo: get link fro user and do a request to get the json data
         fetch("output.json")
             .then((res) => res.json())
             .then((data) => {
@@ -50,20 +50,6 @@ const Canvas: NextPage = () => {
                 setLoading(false)
             })
     }
-
-    // useEffect(() => {
-    //     setLoading(true)
-    //     // todo: get link fro user and do a request to get the json data
-    //     fetch("output.json")
-    //         .then((res) => res.json())
-    //         .then((data) => {
-    //             setData(data)
-    //             setLoading(false)
-    //         })
-    // }, []);
-
-    // if (isLoading) return <p>Loading...</p>
-    // if (!data) return <p>No data</p>
 
     return (
         <>
