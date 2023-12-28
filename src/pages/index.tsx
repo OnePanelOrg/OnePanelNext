@@ -1,9 +1,66 @@
 import { type NextPage } from "next";
 import Head from "next/head";
 import Link from "next/link";
-
+import { useState } from "react";
+import ImageCanvas from "../components/ImageCanvas";
+import InputForm from "../components/InputForm";
 
 const Home: NextPage = () => {
+  const [data, setData] = useState(null);
+  const [isLoading, setLoading] = useState(false);
+
+  async function inputIsNotValid(chapter_url: string) {
+    if (!chapter_url) {
+      return true;
+    }
+    if (!chapter_url.includes("https://tcbscans.com/")) {
+      return true;
+    }
+    return false;
+  }
+
+  async function postUrl(chapter_url: string) {
+    if (await inputIsNotValid(chapter_url)) {
+      // todo: show error
+      return;
+    }
+    setLoading(true);
+
+    // const url = `${process.env.SERVER_URL}:${process.env.SERVER_PORT}/chapter`
+    const url = `https://api.onepanel.app/chapter`;
+    // const url = `http://localhost:8000/chapter`
+
+    fetch(url, {
+      mode: "cors",
+      method: "POST",
+      body: JSON.stringify({ chapter_url: chapter_url }),
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+        "Content-Type": "application/json",
+      },
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        console.log(data);
+        setData(data);
+        setLoading(false);
+      });
+    // .catch(rejected => {
+    //     console.log(rejected);
+    // });
+  }
+
+  async function dummy_postUrl() {
+    console.log("dummy fetching");
+    setLoading(true);
+
+    fetch("output.json")
+      .then((res) => res.json())
+      .then((data) => {
+        setData(data);
+        setLoading(false);
+      });
+  }
 
   return (
     <>
@@ -14,16 +71,13 @@ const Home: NextPage = () => {
       </Head>
       <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#15162c]">
         {/* todo: center canvas */}
+        {!isLoading && !data && <InputForm childToParent={postUrl}></InputForm>}
+        {/* OFCOURSE we need a better loading state */}
+        {isLoading && <p>Loading...</p>}
         <div>
-
-          <Link
-            className="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-            href={"/canvas"}
-          >
-            Go!
-          </Link>
+          {/* {!data && <p>No data</p>} */}
+          {data && !isLoading && <ImageCanvas data={data}></ImageCanvas>}
         </div>
-
       </main>
     </>
   );

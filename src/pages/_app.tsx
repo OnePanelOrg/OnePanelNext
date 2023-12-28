@@ -6,7 +6,7 @@ import {
 } from '@clerk/nextjs';
 import { type AppType } from "next/dist/shared/lib/utils";
 import Link from "next/link";
-
+import "../styles/globals.css";
 
 function Header() {
   return (
@@ -31,7 +31,7 @@ function Header() {
   );
 }
 
-import "../styles/globals.css";
+
 
 const MyApp: AppType = ({ Component, pageProps }) => {
   return (
