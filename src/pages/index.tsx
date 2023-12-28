@@ -28,7 +28,7 @@ const Home: NextPage = () => {
 
     // const url = `${process.env.SERVER_URL}:${process.env.SERVER_PORT}/chapter`
     const url = `https://api.onepanel.app/chapter`;
-    // const url = `http://localhost:8000/chapter`
+    // const url = `http://localhost:8000/chapter`;
 
     fetch(url, {
       mode: "cors",
