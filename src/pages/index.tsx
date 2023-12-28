@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import ImageCanvas from "../components/ImageCanvas";
 import InputForm from "../components/InputForm";
+import LoadingComponent from "../components/Loading";
 
 const Home: NextPage = () => {
   const [data, setData] = useState(null);
@@ -72,10 +73,8 @@ const Home: NextPage = () => {
       <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#15162c]">
         {/* todo: center canvas */}
         {!isLoading && !data && <InputForm childToParent={postUrl}></InputForm>}
-        {/* OFCOURSE we need a better loading state */}
-        {isLoading && <p>Loading...</p>}
+        {isLoading && <LoadingComponent></LoadingComponent>}
         <div>
-          {/* {!data && <p>No data</p>} */}
           {data && !isLoading && <ImageCanvas data={data}></ImageCanvas>}
         </div>
       </main>
