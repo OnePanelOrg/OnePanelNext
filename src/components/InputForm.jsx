@@ -13,8 +13,7 @@ export default function InputForm({ childToParent }) {
               <Link href="https://tcbscans.com/" className="bg:blue">
                 TCBScans
               </Link>{" "}
-              link of the manga chapter you would like to read (one panel at the
-              time)
+              link of the manga chapter you would like to read
             </p>
 
             <div className="mt-10 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
