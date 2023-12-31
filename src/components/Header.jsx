@@ -4,7 +4,7 @@ const Header = () => {
   return (
     <div className="nav-bar w-nav">
       <div className="wrapper nav-bar-wrapper">
-        <a href="#" className="brand w-nav-brand">
+        <a href="#" rel="noopener noreferrer" className="brand w-nav-brand">
           <Image
             src="/icon.png"
             alt=""
@@ -20,6 +20,7 @@ const Header = () => {
               <a
                 href="https://github.com/OnePanelOrg/LandingPage"
                 target="_blank"
+                rel="noopener noreferrer"
                 className="button small white w-button"
               >
                 {" "}
