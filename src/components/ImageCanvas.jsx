@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import ImageCanvasControls from "./ImageCanvasControls";
+import FeedbackForm from "./FeedbackForm";
 
 const ImageCanvas = ({ data }) => {
   const canvasRef = useRef(null);
@@ -176,6 +177,7 @@ const ImageCanvas = ({ data }) => {
         width={window.innerWidth}
         height={window.innerHeight}
       ></canvas>
+      {currentPageIndex === data.pages.length - 1 && <FeedbackForm />}
       <ImageCanvasControls
         currentPageIndex={currentPageIndex}
         currentPanelIndex={currentPanelIndex}
