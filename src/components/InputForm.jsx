@@ -10,7 +10,10 @@ export default function InputForm({ childToParent }) {
           <div className="border-b border-gray-900/10 pb-12">
             <p className="mt-1 text-sm leading-6 text-gray-600">
               Insert the{" "}
-              <Link href="https://tcbscans.com/" className="bg:blue">
+              <Link
+                href="https://tcb-backup.bihar-mirchi.com/"
+                className="bg:blue"
+              >
                 TCBScans
               </Link>{" "}
               link of the manga chapter you would like to read
@@ -32,7 +35,7 @@ export default function InputForm({ childToParent }) {
                       id="username"
                       autoComplete="username"
                       className="block flex-1 border-0 bg-transparent py-1.5 pl-1 text-gray-900 placeholder:text-gray-400 focus:ring-0 sm:text-sm sm:leading-6"
-                      placeholder="https://tcbscans.com/something"
+                      placeholder="https://tcb-backup.bihar-mirchi.com/something"
                       onChange={(event) => setChapterValue(event.target.value)}
                     />
                   </div>
