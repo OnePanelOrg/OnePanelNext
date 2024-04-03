@@ -32,7 +32,7 @@ const Home: NextPage = () => {
     setLoading(true);
 
     // const url = `${process.env.SERVER_URL}:${process.env.SERVER_PORT}/chapter`
-    const url = `https://api.onepanel.app/v2/chapter`;
+    const url = `http://api-1150117127.eu-central-1.elb.amazonaws.com/v2/chapter`;
     // const url = `http://localhost:8000/v2/chapter`;
 
     fetch(url, {
