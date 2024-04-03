@@ -11,7 +11,7 @@ export default function Page() {
   useEffect(() => {
     if (!router.isReady) return;
 
-    const url = `http://api-1150117127.eu-central-1.elb.amazonaws.com/v2/chapter/${router.query.hash}`;
+    const url = `https://api.onepanel.app/v2/chapter/${router.query.hash}`;
     // const url = `http://localhost:8000/v2/chapter/${router.query.hash}`;
 
     fetch(url, {
