@@ -1,0 +1,3 @@
+- [] Add Chapter infos upon reader controller (name, author)
+- [] Ask for feedback after last page
+- [] Add scheleton at chapter loading
