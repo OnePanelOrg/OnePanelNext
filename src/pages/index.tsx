@@ -17,7 +17,7 @@ const Home: NextPage = () => {
     if (!chapter_url) {
       return true;
     }
-    if (!chapter_url.includes("https://tcb-backup.bihar-mirchi.com/")) {
+    if (!chapter_url.includes("https://tcbscans.me/")) {
       return true;
     }
     return false;
