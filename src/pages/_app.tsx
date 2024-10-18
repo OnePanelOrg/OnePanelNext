@@ -9,6 +9,7 @@ import { type AppType } from "next/dist/shared/lib/utils";
 import Link from "next/link";
 import "../styles/globals.css";
 import { Analytics } from "@vercel/analytics/react";
+import { ThemeProvider } from 'next-themes';
 
 function Header() {
   return (
@@ -36,7 +37,9 @@ const MyApp: AppType = ({ Component, pageProps }) => {
   return (
     <ClerkProvider {...pageProps}>
       {/* <Header /> */}
-      <Component {...pageProps} />
+      <ThemeProvider attribute="class">
+        <Component {...pageProps} />
+      </ThemeProvider>
       <Analytics />
     </ClerkProvider>
   );

@@ -1,36 +1,25 @@
-import Image from "next/image";
+import Link from 'next/link';
+import { useTheme } from 'next-themes';
+import { useEffect, useState } from 'react';
 
 const Header = () => {
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   return (
-    <div className="nav-bar w-nav">
-      <div className="wrapper nav-bar-wrapper">
-        <a href="#" rel="noopener noreferrer" className="brand w-nav-brand">
-          <Image
-            src="/icon.png"
-            alt=""
-            className="logo-icon"
-            width={10}
-            height={10}
-          />
-          <div className="logo-text">OnePanel</div>
-        </a>
-        <div className="navigation">
-          <div className="nav-right">
-            <div className="w-layout-grid nav-buttons">
-              <a
-                href="https://github.com/OnePanelOrg/LandingPage"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="button small white w-button"
-              >
-                {" "}
-                GitHub
-              </a>
-            </div>
-          </div>
-        </div>
+    <header className="bg-[#64de9f] shadow-md">
+      <div className="container mx-auto px-4 py-4 flex justify-between items-center">
+        <Link href="/" className="text-2xl font-bold text-white">
+          OnePanel Reader
+        </Link>
+        <nav>
+        </nav>
       </div>
-    </div>
+    </header>
   );
 };
 
