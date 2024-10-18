@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import React, { use, useState, useEffect } from "react";
 
-const FeedbackForm = () => {
+const FeedbackForm = ({ chapter_hash }) => {
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState("");
 
@@ -12,9 +12,39 @@ const FeedbackForm = () => {
     setComment(event.target.value);
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
+
     // Handle form submission logic here
+    const feedback = { rating, comment, chapter_hash };
+
+    try {
+      const response = await fetch("http://localhost:8000/v2/feedback", {
+        mode: "cors",
+        method: "POST",
+        headers: {
+          "Access-Control-Allow-Origin": "*",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(feedback),
+      });
+
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
+      }
+
+      // Show a success message to the user
+      // alert("Feedback submitted successfully!");
+
+      // Reset the form
+      setRating(0);
+      setComment("");
+    } catch (error) {
+      console.error(
+        "There has been a problem with your fetch operation:",
+        error
+      );
+    }
   };
 
   return (
@@ -30,6 +60,7 @@ const FeedbackForm = () => {
             {[1, 2, 3, 4, 5].map((value) => (
               <button
                 key={value}
+                type="button"
                 className={`mx-1 rounded-md py-2 px-3 text-white ${
                   rating === value ? "bg-blue-600" : "bg-gray-300"
                 }`}
@@ -52,6 +83,7 @@ const FeedbackForm = () => {
         </div>
         <button
           type="submit"
+          key="submit"
           className="rounded bg-blue-500 py-2 px-4 font-bold text-white hover:bg-blue-700"
         >
           Submit

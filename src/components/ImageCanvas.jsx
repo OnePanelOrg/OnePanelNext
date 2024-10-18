@@ -177,7 +177,9 @@ const ImageCanvas = ({ data }) => {
         width={window.innerWidth}
         height={window.innerHeight}
       ></canvas>
-      {currentPageIndex === data.pages.length - 1 && <FeedbackForm />}
+      {currentPageIndex === 0 && (
+        <FeedbackForm chapter_hash={data["chapter_hash"]} />
+      )}
       <ImageCanvasControls
         currentPageIndex={currentPageIndex}
         currentPanelIndex={currentPanelIndex}

@@ -24,6 +24,7 @@ export default function Page() {
     })
       .then((res) => res.json())
       .then((data) => {
+        data["chapter_hash"] = router.query.hash;
         setData(data);
         setLoading(false);
       });
