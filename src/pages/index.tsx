@@ -17,7 +17,7 @@ const Home: NextPage = () => {
     if (!chapter_url) {
       return true;
     }
-    if (!chapter_url.includes("https://tcbscans.me/")) {
+    if (!chapter_url.includes("https://opchapters.com/")) {
       return true;
     }
     return false;
@@ -82,7 +82,7 @@ const Home: NextPage = () => {
               <div className="w-full max-w-md">
                 <h1 className="text-4xl font-bold mb-6 text-center text-white">Welcome to OnePanel Reader</h1>
                 <p className="text-center mb-8 text-gray-900 dark:text-white">
-                  Enter a <a href="https://tcbscans.me" target="_blank" rel="noopener noreferrer" className="text-blue-700 hover:text-blue-900 dark:text-blue-300 dark:hover:text-blue-100 underline font-semibold">TCB Scans</a> URL to get started
+                  Enter a <a href="https://opchapters.com/" target="_blank" rel="noopener noreferrer" className="text-blue-700 hover:text-blue-900 dark:text-blue-300 dark:hover:text-blue-100 underline font-semibold">OP Chapters</a> URL to get started
                 </p>
                 <InputForm childToParent={postUrl} />
               </div>
