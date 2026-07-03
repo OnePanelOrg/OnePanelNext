@@ -1,94 +1,88 @@
 import { type NextPage } from "next";
 import Head from "next/head";
 import { useState } from "react";
-import ImageCanvas from "../components/ImageCanvas";
 import InputForm from "../components/InputForm";
 import LoadingComponent from "../components/Loading";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import { useRouter } from "next/router";
+import ErrorMessage from "../components/ErrorMessage";
+import { createChapter } from "../lib/api";
 
 const Home: NextPage = () => {
-  const [data, setData] = useState(null);
   const [isLoading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
-  async function inputIsNotValid(chapter_url: string) {
-    if (!chapter_url) {
-      return true;
+  function isValidChapterUrl(chapterUrl: string) {
+    try {
+      const url = new URL(chapterUrl);
+      return url.protocol === "https:" && url.hostname === "opchapters.com";
+    } catch {
+      return false;
     }
-    if (!chapter_url.includes("https://opchapters.com/")) {
-      return true;
-    }
-    return false;
   }
 
-  async function postUrl(chapter_url: string) {
-    if (await inputIsNotValid(chapter_url)) {
-      // todo: show error
-      console.error("invalid input");
+  async function postUrl(chapterUrl: string) {
+    if (!isValidChapterUrl(chapterUrl)) {
+      setError("Enter a valid https://opchapters.com chapter URL.");
       return;
     }
+
     setLoading(true);
-
-    // const url = `${process.env.SERVER_URL}:${process.env.SERVER_PORT}/chapter`
-    const url = `https://api2.onepanel.app/v2/chapter`;
-    // const url = `http://localhost:8000/v2/chapter`;
-
-    fetch(url, {
-      mode: "cors",
-      method: "POST",
-      body: JSON.stringify({ chapter_url: chapter_url }),
-      headers: {
-        "Access-Control-Allow-Origin": "*",
-        "Content-Type": "application/json",
-      },
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        // setData(data);
-        setLoading(false);
-        router.push(`/chapter/${data["chapter_hash"]}`);
-      });
-    // .catch(rejected => {
-    //     console.log(rejected);
-    // });
-  }
-
-  async function dummy_postUrl() {
-    console.log("dummy fetching");
-    setLoading(true);
-
-    fetch("output.json")
-      .then((res) => res.json())
-      .then((data) => {
-        setData(data);
-        setLoading(false);
-      });
+    setError(null);
+    try {
+      const chapterHash = await createChapter(chapterUrl);
+      await router.push(`/chapter/${chapterHash}`);
+    } catch (error) {
+      setError(
+        error instanceof Error ? error.message : "Could not load the chapter.",
+      );
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
     <>
       <Head>
         <title>OnePanel Reader</title>
-        <meta name="description" content="Read manga chapters in one seamless panel" />
+        <meta
+          name="description"
+          content="Read manga chapters in one seamless panel"
+        />
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <div className="flex min-h-screen flex-col bg-gradient-to-b from-[#64de9f] to-[#13aeae] text-gray-900">
         <Header />
-        <main className="flex-grow container mx-auto px-4 py-8">
-          <div className="flex items-center justify-center h-full">
-            {!isLoading && !data && (
+        <main className="container mx-auto flex-grow px-4 py-8">
+          <div className="flex h-full items-center justify-center">
+            {!isLoading && (
               <div className="w-full max-w-md">
-                <h1 className="text-4xl font-bold mb-6 text-center text-white">Welcome to OnePanel Reader</h1>
-                <p className="text-center mb-8 text-gray-900 dark:text-white">
-                  Enter a <a href="https://opchapters.com/" target="_blank" rel="noopener noreferrer" className="text-blue-700 hover:text-blue-900 dark:text-blue-300 dark:hover:text-blue-100 underline font-semibold">OP Chapters</a> URL to get started
+                <h1 className="mb-6 text-center text-4xl font-bold text-white">
+                  Welcome to OnePanel Reader
+                </h1>
+                <p className="mb-8 text-center text-gray-900 dark:text-white">
+                  Enter a{" "}
+                  <a
+                    href="https://opchapters.com/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-semibold text-blue-700 underline hover:text-blue-900 dark:text-blue-300 dark:hover:text-blue-100"
+                  >
+                    OP Chapters
+                  </a>{" "}
+                  URL to get started
                 </p>
-                <InputForm childToParent={postUrl} />
+                <InputForm childToParent={postUrl} disabled={isLoading} />
+                {error && (
+                  <div className="mt-4">
+                    <ErrorMessage message={error} />
+                  </div>
+                )}
               </div>
             )}
             {isLoading && <LoadingComponent />}
-            {data && !isLoading && <ImageCanvas data={data} />}
           </div>
         </main>
         <Footer />

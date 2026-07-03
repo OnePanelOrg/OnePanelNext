@@ -1,25 +1,28 @@
 import { useState } from "react";
 
-const InputForm = ({ childToParent }) => {
+const InputForm = ({ childToParent, disabled = false }) => {
   const [url, setUrl] = useState("");
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    childToParent(url);
+    void childToParent(url);
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <input
-        type="text"
+        type="url"
+        required
+        disabled={disabled}
         value={url}
         onChange={(e) => setUrl(e.target.value)}
         placeholder="Enter TCB Scans URL"
-        className="w-full px-4 py-2 rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#64de9f] focus:border-[#64de9f] dark:focus:border-[#64de9f]"
+        className="w-full rounded-md border border-gray-300 bg-white px-4 py-2 text-gray-900 focus:border-[#64de9f] focus:outline-none focus:ring-2 focus:ring-[#64de9f] dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:focus:border-[#64de9f]"
       />
       <button
         type="submit"
-        className="w-full px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
+        disabled={disabled}
+        className="w-full rounded-md bg-blue-500 px-4 py-2 text-white transition-colors hover:bg-blue-600"
       >
         Load Chapter
       </button>

@@ -8,7 +8,7 @@
 /** @type {import("next").NextConfig} */
 const config = {
   reactStrictMode: true,
-  swcMinify: true,
+  outputFileTracingRoot: process.cwd(),
   i18n: {
     locales: ["en"],
     defaultLocale: "en",

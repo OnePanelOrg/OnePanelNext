@@ -1,0 +1,94 @@
+import { z } from "zod";
+import { env } from "../env/client.mjs";
+
+const panelSchema = z.object({
+  path: z.string().min(1),
+});
+
+const pageSchema = z.object({
+  image: z.string().min(1),
+  panels: z.array(panelSchema).min(1),
+});
+
+const chapterSchema = z.object({
+  pages: z.array(pageSchema).min(1),
+});
+
+const chapterCreatedSchema = z.object({
+  chapter_hash: z.string().min(1),
+});
+
+export type Chapter = z.infer<typeof chapterSchema>;
+
+const API_TIMEOUT_MS = 120_000;
+
+export class ApiError extends Error {
+  constructor(
+    message: string,
+    public readonly status?: number,
+  ) {
+    super(message);
+    this.name = "ApiError";
+  }
+}
+
+async function request(path: string, init?: RequestInit): Promise<unknown> {
+  const controller = new AbortController();
+  const timeout = window.setTimeout(() => controller.abort(), API_TIMEOUT_MS);
+
+  try {
+    const response = await fetch(
+      `${env.NEXT_PUBLIC_API_URL.replace(/\/$/, "")}${path}`,
+      {
+        ...init,
+        signal: controller.signal,
+        headers: {
+          "Content-Type": "application/json",
+          ...init?.headers,
+        },
+      },
+    );
+
+    if (!response.ok) {
+      throw new ApiError(
+        `The API returned ${response.status} ${response.statusText}.`,
+        response.status,
+      );
+    }
+
+    return await response.json();
+  } catch (error) {
+    if (error instanceof ApiError) throw error;
+    if (error instanceof DOMException && error.name === "AbortError") {
+      throw new ApiError("The API request timed out. Please try again.");
+    }
+    throw new ApiError(
+      error instanceof Error
+        ? `Could not reach the API: ${error.message}`
+        : "Could not reach the API.",
+    );
+  } finally {
+    window.clearTimeout(timeout);
+  }
+}
+
+function parseResponse<T>(schema: z.ZodType<T>, value: unknown): T {
+  const result = schema.safeParse(value);
+  if (!result.success) {
+    throw new ApiError("The API returned an invalid response.");
+  }
+  return result.data;
+}
+
+export async function createChapter(chapterUrl: string): Promise<string> {
+  const value = await request("/v2/chapter", {
+    method: "POST",
+    body: JSON.stringify({ chapter_url: chapterUrl }),
+  });
+  return parseResponse(chapterCreatedSchema, value).chapter_hash;
+}
+
+export async function getChapter(hash: string): Promise<Chapter> {
+  const value = await request(`/v2/chapter/${encodeURIComponent(hash)}`);
+  return parseResponse(chapterSchema, value);
+}
