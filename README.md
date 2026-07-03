@@ -24,7 +24,8 @@ avoiding spoilers from the rest of the page.
    ```
 
    `NEXT_PUBLIC_API_URL` must be the API origin without the `/v2/chapter`
-   suffix, for example `http://localhost:8000`.
+   suffix, for example `http://localhost:8000`. When it is not set, the app
+   uses the deployed Railway API.
 
 3. Start the application:
 

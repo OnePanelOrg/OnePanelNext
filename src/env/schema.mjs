@@ -15,7 +15,10 @@ export const serverSchema = z.object({
  * To expose them to the client, prefix them with `NEXT_PUBLIC_`.
  */
 export const clientSchema = z.object({
-  NEXT_PUBLIC_API_URL: z.string().url(),
+  NEXT_PUBLIC_API_URL: z
+    .string()
+    .url()
+    .default("https://manga-panel-extractor-production.up.railway.app"),
 });
 
 /**
