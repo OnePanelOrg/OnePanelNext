@@ -8,6 +8,10 @@ import Header from "../components/Header";
 import Footer from "../components/Footer";
 import { useRouter } from "next/router";
 
+const API_URL =
+  process.env.NEXT_PUBLIC_API_URL ??
+  "https://manga-panel-extractor-production.up.railway.app";
+
 const Home: NextPage = () => {
   const [data, setData] = useState(null);
   const [isLoading, setLoading] = useState(false);
@@ -31,9 +35,7 @@ const Home: NextPage = () => {
     }
     setLoading(true);
 
-    // const url = `${process.env.SERVER_URL}:${process.env.SERVER_PORT}/chapter`
-    const url = `https://api2.onepanel.app/v2/chapter`;
-    // const url = `http://localhost:8000/v2/chapter`;
+    const url = `${API_URL}/v2/chapter`;
 
     fetch(url, {
       mode: "cors",
