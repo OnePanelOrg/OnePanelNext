@@ -3,6 +3,10 @@ import { useEffect, useRef, useState } from "react";
 import ImageCanvas from "../../components/ImageCanvas";
 import Head from "next/head";
 
+const API_URL =
+  process.env.NEXT_PUBLIC_API_URL ??
+  "https://manga-panel-extractor-production.up.railway.app";
+
 export default function Page() {
   const router = useRouter();
   const [data, setData] = useState(null);
@@ -11,8 +15,7 @@ export default function Page() {
   useEffect(() => {
     if (!router.isReady) return;
 
-    const url = `https://api2.onepanel.app/v2/chapter/${router.query.hash}`;
-    // const url = `http://localhost:8000/v2/chapter/${router.query.hash}`;
+    const url = `${API_URL}/v2/chapter/${router.query.hash}`;
 
     fetch(url, {
       mode: "cors",
