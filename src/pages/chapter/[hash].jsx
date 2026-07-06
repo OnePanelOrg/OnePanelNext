@@ -1,3 +1,4 @@
+import { SignInButton, useAuth } from "@clerk/nextjs";
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useState } from "react";
 import ImageCanvas from "../../components/ImageCanvas";
@@ -11,9 +12,15 @@ export default function Page() {
   const [data, setData] = useState(null);
   const [isLoading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const { getToken, isLoaded, isSignedIn } = useAuth();
 
   const loadChapter = useCallback(async () => {
-    if (!router.isReady) return;
+    if (!router.isReady || !isLoaded) return;
+    if (!isSignedIn) {
+      setLoading(false);
+      setError("Sign in with an active subscription to read this chapter.");
+      return;
+    }
     const hash = Array.isArray(router.query.hash)
       ? router.query.hash[0]
       : router.query.hash;
@@ -23,7 +30,9 @@ export default function Page() {
     setError(null);
     setData(null);
     try {
-      setData(await getChapter(hash));
+      const token = await getToken();
+      if (!token) throw new Error("Your session expired. Please sign in again.");
+      setData(await getChapter(hash, token));
     } catch (error) {
       setError(
         error instanceof Error ? error.message : "Could not load the chapter.",
@@ -31,7 +40,7 @@ export default function Page() {
     } finally {
       setLoading(false);
     }
-  }, [router.isReady, router.query.hash]);
+  }, [getToken, isLoaded, isSignedIn, router.isReady, router.query.hash]);
 
   useEffect(() => {
     void loadChapter();
@@ -46,7 +55,18 @@ export default function Page() {
       </Head>
       <main className="flex min-h-screen items-center justify-center bg-gradient-to-b from-[#64de9f] to-[#13aeae]">
         {isLoading && <LoadingComponent />}
-        {error && <ErrorMessage message={error} onRetry={loadChapter} />}
+        {error && (
+          <div className="space-y-4 text-center">
+            <ErrorMessage message={error} onRetry={loadChapter} />
+            {!isSignedIn && (
+              <SignInButton mode="modal">
+                <button className="rounded-md bg-blue-600 px-4 py-2 font-semibold text-white">
+                  Sign in
+                </button>
+              </SignInButton>
+            )}
+          </div>
+        )}
         {data && !isLoading && <ImageCanvas data={data}></ImageCanvas>}
       </main>
     </>

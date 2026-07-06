@@ -5,7 +5,7 @@ avoiding spoilers from the rest of the page.
 
 ## Requirements
 
-- Node.js 18.18 or newer
+- Node.js 24 LTS
 - npm
 - A compatible OnePanel API
 
@@ -17,7 +17,7 @@ avoiding spoilers from the rest of the page.
    npm install
    ```
 
-2. Copy the environment template and configure the API:
+2. Copy the environment template and configure the API and Clerk:
 
    ```sh
    cp .env.example .env.local
@@ -67,20 +67,19 @@ with a coordinate path.
 Because `NEXT_PUBLIC_API_URL` is browser-visible, it must not contain secrets.
 CORS response headers must be configured by the API.
 
-## Authentication
+## Authentication and billing
 
-Authentication is intentionally deferred to the next iteration. The previous
-Clerk integration was removed because its middleware matched only the already
-public home page and therefore protected no application capability.
+Clerk provides browser authentication. The frontend sends the current Clerk
+session token to the API as a bearer token for every chapter and billing
+request. The API validates that token and enforces an active Stripe subscription
+for chapter creation and retrieval.
 
-Before adding authentication back, define the protected resource boundary. At a
-minimum, authorization must be enforced by the API for chapter creation and any
-private chapter retrieval; frontend route guards alone are not a security
-boundary.
+Stripe Checkout sells one €4.99 EUR monthly subscription with no free trial.
+Stripe's Customer Portal handles cancellation and payment-method management.
+The API, not frontend visibility, is the authorization boundary.
 
 ## Maintenance
 
-The project currently uses the Pages Router on Next.js 15 to remain compatible
-with Node.js 18. A future Next.js 16 upgrade first requires Node.js 20.9 or
-newer. Run `npm audit` when updating dependencies and commit `package-lock.json`
-with dependency changes.
+The project currently uses the Pages Router on Next.js 15 and targets Node.js
+24 LTS. Run `npm audit` when updating dependencies and commit
+`package-lock.json` with dependency changes.
