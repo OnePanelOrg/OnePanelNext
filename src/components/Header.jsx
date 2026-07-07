@@ -1,36 +1,37 @@
-import Image from "next/image";
+import {
+  Show,
+  SignInButton,
+  SignUpButton,
+  UserButton,
+} from "../lib/auth";
+import Link from "next/link";
 
 const Header = () => {
   return (
-    <div className="nav-bar w-nav">
-      <div className="wrapper nav-bar-wrapper">
-        <a href="#" rel="noopener noreferrer" className="brand w-nav-brand">
-          <Image
-            src="/icon.png"
-            alt=""
-            className="logo-icon"
-            width={10}
-            height={10}
-          />
-          <div className="logo-text">OnePanel</div>
-        </a>
-        <div className="navigation">
-          <div className="nav-right">
-            <div className="w-layout-grid nav-buttons">
-              <a
-                href="https://github.com/OnePanelOrg/LandingPage"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="button small white w-button"
-              >
-                {" "}
-                GitHub
-              </a>
-            </div>
-          </div>
+    <header className="border-b border-gray-200 bg-white/95 shadow-sm backdrop-blur">
+      <div className="container mx-auto flex items-center justify-between px-4 py-4">
+        <Link href="/" className="text-xl font-bold text-gray-950 sm:text-2xl">
+          OnePanel Reader
+        </Link>
+        <div className="flex items-center gap-3">
+          <Show when="signed-out">
+            <SignInButton mode="modal">
+              <button className="rounded-md border border-gray-300 px-3 py-2 font-semibold text-gray-800 hover:bg-gray-100">
+                Sign in
+              </button>
+            </SignInButton>
+            <SignUpButton mode="modal">
+              <button className="rounded-md bg-gray-950 px-3 py-2 font-semibold text-white hover:bg-gray-800">
+                Create account
+              </button>
+            </SignUpButton>
+          </Show>
+          <Show when="signed-in">
+            <UserButton />
+          </Show>
         </div>
       </div>
-    </div>
+    </header>
   );
 };
 

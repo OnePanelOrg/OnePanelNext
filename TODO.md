@@ -1,3 +1,3 @@
-- [] Add Chapter infos upon reader controller (name, author)
-- [] Ask for feedback after last page
-- [] Add scheleton at chapter loading
+- [ ] Add chapter info to reader controls (name, author)
+- [x] Ask for feedback after last page
+- [ ] Add skeleton state while chapters load

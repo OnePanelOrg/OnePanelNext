@@ -1,24 +1,102 @@
-# OnePanelNext
+# OnePanel Reader
 
-OnePanel is an app that allow you to read your favorite Manga, one panel at a time
+OnePanel is a Next.js reader that reveals a manga chapter one panel at a time,
+avoiding spoilers from the rest of the page.
 
-We belive in this new reading experience, in between the old Manga reading and watching an Anime
+## Requirements
 
-The panels will be displayed one by one, allowing the reader to dedicate the right amount of time to each panel, without spoiling the rest of the page!
+- Node.js 24 LTS
+- npm
+- A compatible OnePanel API
 
-## Technologies
-OnePanelNext is a complete rewrite of the OnePanel project in Next.js
-This will allow a future proofing of the project and *maybe* an increased number of contribution
+## Local development
 
+1. Install dependencies:
 
-This is a [T3 Stack](https://create.t3.gg/) project bootstrapped with `create-t3-app`.
+   ```sh
+   npm install
+   ```
 
-- [Next.js](https://nextjs.org)
-- [NextAuth.js](https://next-auth.js.org)
-- [Prisma](https://prisma.io)
-- [Tailwind CSS](https://tailwindcss.com)
-- [tRPC](https://trpc.io)
+2. Copy the environment template and configure the API and Clerk:
 
-## How do I deploy this?
+   ```sh
+   cp .env.example .env.local
+   ```
 
-Will likely deploy on [Vercel](https://create.t3.gg/en/deployment/vercel)
+   `NEXT_PUBLIC_API_URL` must be the API origin without the `/v2/chapter`
+   suffix, for example `http://localhost:8000`. When it is not set, the app
+   uses the deployed Railway API.
+
+3. Start the application:
+
+   ```sh
+   npm run dev
+   ```
+
+## Commands
+
+- `npm run dev` — start the development server
+- `npm run test` — run navigation unit tests
+- `npm run lint` — run ESLint with zero warnings allowed
+- `npm run build` — create a production build
+- `npm start` — serve the production build
+
+## Marketing analytics
+
+Set `NEXT_PUBLIC_GA_MEASUREMENT_ID` to a GA4 measurement ID, for example
+`G-XXXXXXXXXX`, to load Google Analytics and emit launch funnel events:
+
+- `chapter_url_submitted`
+- `chapter_created`
+- `checkout_started`
+- `checkout_redirect_created`
+- `billing_portal_opened`
+- `billing_portal_redirect_created`
+
+Subscription completion should be tracked by the API or Stripe webhook, because
+the frontend cannot reliably observe completed checkout after the user leaves
+the site.
+
+## Reader behavior
+
+- Navigation stops at the first and last panel instead of wrapping or producing
+  invalid page indexes.
+- Moving to a previous page selects that page's last panel.
+- Left and right arrow keys navigate panels.
+- Images load independently. A failed image displays an error for that page
+  without blocking the rest of the chapter.
+- API calls have a two-minute timeout, validate HTTP status and response shape,
+  and expose retryable errors to the user.
+- Only HTTPS URLs whose hostname is exactly `opchapters.com` are accepted.
+
+## Configuration and API contract
+
+The browser calls the same-origin `/api/onepanel/*` rewrite, which forwards to
+`NEXT_PUBLIC_API_URL`:
+
+- `POST /v2/chapter` with `{ "chapter_url": "..." }`
+- `GET /v2/chapter/:hash`
+
+The POST response must contain a non-empty `chapter_hash`. A chapter must contain
+at least one page; every page must contain an image URL and at least one panel
+with a coordinate path.
+
+Because `NEXT_PUBLIC_API_URL` is used by the frontend deployment, it must not
+contain secrets.
+
+## Authentication and billing
+
+Clerk provides browser authentication. The frontend sends the current Clerk
+session token to the API as a bearer token for every chapter and billing
+request. The API validates that token and enforces an active Stripe subscription
+for chapter creation and retrieval.
+
+Stripe Checkout sells one €4.99 EUR monthly subscription with no free trial.
+Stripe's Customer Portal handles cancellation and payment-method management.
+The API, not frontend visibility, is the authorization boundary.
+
+## Maintenance
+
+The project currently uses the Pages Router on Next.js 15 and targets Node.js
+24 LTS. Run `npm audit` when updating dependencies and commit
+`package-lock.json` with dependency changes.

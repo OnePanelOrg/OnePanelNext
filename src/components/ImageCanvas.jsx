@@ -1,194 +1,183 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import ImageCanvasControls from "./ImageCanvasControls";
 import FeedbackForm from "./FeedbackForm";
+import ErrorMessage from "./ErrorMessage";
+import { getNextPosition, getPreviousPosition } from "../lib/reader-state.mjs";
 
-const ImageCanvas = ({ data }) => {
+const pendingImage = () => ({ status: "loading", image: null });
+
+const ImageCanvas = ({ data, chapterHash }) => {
   const canvasRef = useRef(null);
-  const [images, setImages] = useState([]);
+  const [imageStates, setImageStates] = useState(() =>
+    data.pages.map(pendingImage),
+  );
   const [currentPageIndex, setCurrentPageIndex] = useState(0);
   const [currentPanelIndex, setCurrentPanelIndex] = useState(0);
-  const [panelsInThisPage, setpanelsInThisPage] = useState(0);
+  const [viewport, setViewport] = useState({ width: 1, height: 1 });
 
-  // load data
   useEffect(() => {
-    const loadedImages = [];
-    let loadedCount = 0;
+    let cancelled = false;
+    setImageStates(data.pages.map(pendingImage));
 
-    data.pages.forEach((element, index) => {
+    const images = data.pages.map((page, index) => {
       const image = new Image();
       image.onload = () => {
-        loadedCount++;
-        if (loadedCount === data.pages.length) {
-          setImages(loadedImages);
-          // setData(data);
-        }
+        if (cancelled) return;
+        setImageStates((states) =>
+          states.map((state, stateIndex) =>
+            stateIndex === index ? { status: "loaded", image } : state,
+          ),
+        );
       };
-      image.src = element.image;
-      loadedImages.push(image);
+      image.onerror = () => {
+        if (cancelled) return;
+        setImageStates((states) =>
+          states.map((state, stateIndex) =>
+            stateIndex === index ? { status: "error", image: null } : state,
+          ),
+        );
+      };
+      image.src = page.image;
+      return image;
     });
+
+    return () => {
+      cancelled = true;
+      images.forEach((image) => {
+        image.onload = null;
+        image.onerror = null;
+      });
+    };
+  }, [data.pages]);
+
+  useEffect(() => {
+    const updateViewport = () => {
+      setViewport({
+        width: window.innerWidth,
+        height: window.innerHeight,
+      });
+    };
+    updateViewport();
+    window.addEventListener("resize", updateViewport);
+    return () => window.removeEventListener("resize", updateViewport);
   }, []);
 
-  // useEffect(() => {
-  //     window.history.pushState(
-  //         null,
-  //         "",
-  //         `?page=${currentPageIndex}&panel=${currentPanelIndex}_${panelsInThisPage-1}`
-  //     );
+  const panelCounts = useMemo(
+    () => data.pages.map((page) => page.panels.length),
+    [data.pages],
+  );
+  const panelsInThisPage = panelCounts[currentPageIndex];
+  const isAtStart = currentPageIndex === 0 && currentPanelIndex === 0;
+  const isAtEnd =
+    currentPageIndex === data.pages.length - 1 &&
+    currentPanelIndex === panelsInThisPage - 1;
 
-  // }, [currentPageIndex, currentPanelIndex]);
-
-  function nextPage() {
-    setCurrentPanelIndex(0);
-    if (currentPageIndex === data.pages.length - 1) {
-      console.log("we are in the last page, now you will see page 0");
-      setCurrentPageIndex(0);
-    } else {
-      setCurrentPageIndex(currentPageIndex + 1);
-      setpanelsInThisPage(data.pages[currentPageIndex + 1].panels.length);
-    }
-  }
-
-  function previousPage() {
-    // TODO: change this to show all the panels of previous page
-    // setCurrentPanelIndex(images[currentPageIndex-1].length-1);
-    setCurrentPanelIndex(0);
-    setCurrentPageIndex(currentPageIndex - 1);
-    return;
-  }
-
-  function handleRightArrow() {
-    if (currentPanelIndex >= panelsInThisPage - 1) {
-      return nextPage();
-    }
-    return setCurrentPanelIndex(currentPanelIndex + 1);
-  }
-
-  function handleLeftArrow() {
-    if (currentPanelIndex == 0) {
-      return previousPage();
-    }
-    return setCurrentPanelIndex(currentPanelIndex - 1);
-  }
-
-  function setCanvasSize(canvas) {
-    var parent = canvas.parentNode,
-      styles = getComputedStyle(parent),
-      w = parseInt(styles.getPropertyValue("width"), 10),
-      h = parseInt(styles.getPropertyValue("height"), 10);
-    canvas.width = w;
-    canvas.height = h;
-  }
-
-  function _drawPanels(ctx, currentImage) {
-    const max = data.pages[currentPageIndex].panels.length;
-    const panels_len = Math.min(
-      Math.max(parseInt(currentPanelIndex + 1), 0),
-      max
+  const handleRightArrow = useCallback(() => {
+    const next = getNextPosition(
+      currentPageIndex,
+      currentPanelIndex,
+      panelCounts,
     );
+    setCurrentPageIndex(next.pageIndex);
+    setCurrentPanelIndex(next.panelIndex);
+  }, [currentPageIndex, currentPanelIndex, panelCounts]);
 
-    // Because of the way canvas works we need all panels up
-    // to and including the desired one.
-    for (var i = 0; i < panels_len; i++) {
-      // The path needs to be split in order to work with it.
-      _drawPanel(ctx, currentImage, i);
-    }
-  }
-
-  function _drawPanel(ctx, currentImage, i) {
-    // console.log("printing panel ", i+1, "/", panelsInThisPage)
-    const path = data.pages[currentPageIndex].panels[i].path.split(",");
-    const len = path.length;
-
-    ctx.save();
-
-    // First we draw a clipping path for the panel
-    ctx.beginPath();
-    for (var j = 0; j < len; j++) {
-      const coards = path[j].trim().split(" ");
-
-      // The svg path's coardinates commands need to be in pixels
-      // instead of percentages. Svg path do not work with %s.
-      const x =
-        (((coards[0] * currentImage.width) / currentImage.height) *
-          window.innerHeight) /
-        100;
-      const y = (coards[1] * window.innerHeight) / 100;
-
-      // The first element in the path needs to
-      // be the M(ove) command/
-      if (len == 0) {
-        ctx.moveTo(x, y);
-      } else {
-        ctx.lineTo(x, y);
-      }
-    }
-    ctx.closePath();
-    ctx.clip();
-
-    ctx.drawImage(
-      currentImage,
-      0,
-      0,
-      (currentImage.width / currentImage.height) * window.innerHeight,
-      window.innerHeight
+  const handleLeftArrow = useCallback(() => {
+    const previous = getPreviousPosition(
+      currentPageIndex,
+      currentPanelIndex,
+      panelCounts,
     );
+    setCurrentPageIndex(previous.pageIndex);
+    setCurrentPanelIndex(previous.panelIndex);
+  }, [currentPageIndex, currentPanelIndex, panelCounts]);
 
-    ctx.restore();
-  }
-
-  function _drawPage(ctx, currentImage) {
-    ctx.save();
-    canvasRef.width = currentImage.width;
-    canvasRef.height = currentImage.height;
-    ctx.globalAlpha = 0.025;
-    ctx.drawImage(
-      currentImage,
-      0,
-      0,
-      (currentImage.width / currentImage.height) * window.innerHeight,
-      window.innerHeight
-    );
-    ctx.globalAlpha = 1;
-    ctx.restore();
-  }
-
-  // draw things
   useEffect(() => {
-    let panels_in_this_page = data.pages[currentPageIndex].panels.length;
-    setpanelsInThisPage(panels_in_this_page);
+    const handleKeyDown = (event) => {
+      if (event.key === "ArrowLeft") handleLeftArrow();
+      if (event.key === "ArrowRight") handleRightArrow();
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [handleLeftArrow, handleRightArrow]);
 
-    const ctx = canvasRef.current.getContext("2d");
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const currentImage = imageStates[currentPageIndex]?.image;
+    if (!canvas || !currentImage) return;
 
-    // fitToContainer(canvasRef);
-    ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
-    if (images.length > 0) {
-      const currentImage = images[currentPageIndex];
+    const context = canvas.getContext("2d");
+    if (!context) return;
 
-      _drawPage(ctx, currentImage);
-      _drawPanels(ctx, currentImage);
+    const displayHeight = viewport.height;
+    const displayWidth =
+      (currentImage.width / currentImage.height) * displayHeight;
+    const pixelRatio = window.devicePixelRatio || 1;
+    canvas.width = Math.round(displayWidth * pixelRatio);
+    canvas.height = Math.round(displayHeight * pixelRatio);
+    canvas.style.width = `${displayWidth}px`;
+    canvas.style.height = `${displayHeight}px`;
+    context.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
+    context.clearRect(0, 0, displayWidth, displayHeight);
+
+    context.save();
+    context.globalAlpha = 0.025;
+    context.drawImage(currentImage, 0, 0, displayWidth, displayHeight);
+    context.restore();
+
+    const panels = data.pages[currentPageIndex].panels;
+    for (let panelIndex = 0; panelIndex <= currentPanelIndex; panelIndex++) {
+      const coordinates = panels[panelIndex].path.split(",");
+      context.save();
+      context.beginPath();
+      coordinates.forEach((coordinate, coordinateIndex) => {
+        const [rawX, rawY] = coordinate.trim().split(/\s+/);
+        const x = (Number(rawX) / 100) * displayWidth;
+        const y = (Number(rawY) / 100) * displayHeight;
+        if (coordinateIndex === 0) context.moveTo(x, y);
+        else context.lineTo(x, y);
+      });
+      context.closePath();
+      context.clip();
+      context.drawImage(currentImage, 0, 0, displayWidth, displayHeight);
+      context.restore();
     }
-  }, [currentPageIndex, currentPanelIndex, images]);
+  }, [currentPageIndex, currentPanelIndex, data.pages, imageStates, viewport]);
+
+  const currentImageState = imageStates[currentPageIndex];
 
   return (
-    <div className="flex">
+    <div className="relative min-h-screen w-full overflow-auto bg-gray-950">
+      {currentImageState?.status === "loading" && (
+        <div className="flex min-h-screen items-center justify-center text-white">
+          Loading page image…
+        </div>
+      )}
+      {currentImageState?.status === "error" && (
+        <div className="flex min-h-screen items-center justify-center p-4">
+          <ErrorMessage message="This page image could not be loaded. You can continue to another page." />
+        </div>
+      )}
       <canvas
         id="image-canvas"
         ref={canvasRef}
-        width={window.innerWidth}
-        height={window.innerHeight}
-      ></canvas>
-      {currentPageIndex === 0 && (
-        <FeedbackForm chapter_hash={data["chapter_hash"]} />
-      )}
+        aria-label={`Chapter page ${currentPageIndex + 1}, panel ${
+          currentPanelIndex + 1
+        }`}
+      />
+      {isAtEnd && <FeedbackForm chapterHash={chapterHash} />}
       <ImageCanvasControls
         currentPageIndex={currentPageIndex}
         currentPanelIndex={currentPanelIndex}
         handleLeftArrow={handleLeftArrow}
         handleRightArrow={handleRightArrow}
         panelsInThisPage={panelsInThisPage}
-        imagesLenght={images.length}
-      ></ImageCanvasControls>
+        imagesLength={data.pages.length}
+        isAtStart={isAtStart}
+        isAtEnd={isAtEnd}
+      />
     </div>
   );
 };
+
 export default ImageCanvas;

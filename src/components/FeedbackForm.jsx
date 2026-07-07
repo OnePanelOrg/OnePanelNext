@@ -1,67 +1,73 @@
-import React, { use, useState, useEffect } from "react";
+import { useState } from "react";
+import ErrorMessage from "./ErrorMessage";
+import { useAuth } from "../lib/auth";
+import { submitFeedback } from "../lib/api";
 
-const FeedbackForm = ({ chapter_hash }) => {
+const FeedbackForm = ({ chapterHash }) => {
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState("");
+  const [isSubmitting, setSubmitting] = useState(false);
+  const [status, setStatus] = useState(null);
+  const [error, setError] = useState(null);
+  const { getToken } = useAuth();
 
   const handleRatingChange = (value) => {
     setRating(value);
+    setStatus(null);
+    setError(null);
   };
 
   const handleCommentChange = (event) => {
     setComment(event.target.value);
+    setStatus(null);
+    setError(null);
   };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    // Handle form submission logic here
-    const feedback = { rating, comment, chapter_hash };
+    if (rating === 0) {
+      setError("Choose a rating before submitting feedback.");
+      return;
+    }
 
+    setSubmitting(true);
+    setStatus(null);
+    setError(null);
     try {
-      const response = await fetch("http://localhost:8000/v2/feedback", {
-        mode: "cors",
-        method: "POST",
-        headers: {
-          "Access-Control-Allow-Origin": "*",
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(feedback),
-      });
-
-      if (!response.ok) {
-        throw new Error("Network response was not ok");
-      }
-
-      // Show a success message to the user
-      // alert("Feedback submitted successfully!");
-
-      // Reset the form
+      const token = await getToken();
+      if (!token) throw new Error("Your session expired. Please sign in again.");
+      await submitFeedback(chapterHash, rating, comment, token);
       setRating(0);
       setComment("");
+      setStatus("Thanks for the feedback.");
     } catch (error) {
-      console.error(
-        "There has been a problem with your fetch operation:",
-        error
+      setError(
+        error instanceof Error ? error.message : "Could not submit feedback.",
       );
+    } finally {
+      setSubmitting(false);
     }
   };
 
   return (
-    <div
-      className="m-3 mx-auto max-w-md overflow-hidden rounded-xl bg-white p-5 shadow-md md:max-w-2xl"
-      style={{ position: "absolute", bottom: 200, right: 20 }}
-    >
-      <form onSubmit={handleSubmit}>
-        <h1 className="mb-4 text-2xl font-bold">Feedback</h1>
-        <div className="mb-4">
-          <span className="text-gray-700">Rating:</span>
-          <div className="mt-2">
+    <div className="pointer-events-auto fixed bottom-24 right-4 z-10 w-[calc(100%-2rem)] max-w-sm rounded-lg bg-white p-4 text-gray-950 shadow-xl sm:right-6">
+      <form className="space-y-4" onSubmit={handleSubmit}>
+        <div>
+          <h2 className="text-lg font-semibold">Feedback</h2>
+          <p className="text-sm text-gray-600">
+            How did this chapter reading feel?
+          </p>
+        </div>
+        <div>
+          <span className="text-sm font-medium text-gray-700">Rating</span>
+          <div className="mt-2 flex gap-2">
             {[1, 2, 3, 4, 5].map((value) => (
               <button
                 key={value}
                 type="button"
-                className={`mx-1 rounded-md py-2 px-3 text-white ${
+                aria-pressed={rating === value}
+                className={`h-9 w-9 rounded-md text-sm font-semibold text-white ${
                   rating === value ? "bg-blue-600" : "bg-gray-300"
                 }`}
                 onClick={() => handleRatingChange(value)}
@@ -71,22 +77,28 @@ const FeedbackForm = ({ chapter_hash }) => {
             ))}
           </div>
         </div>
-        <div className="mb-4">
-          <label className="block text-gray-700">
-            Comment:
-            <textarea
-              className="mt-1 block w-full rounded-md border-transparent bg-gray-100 focus:border-gray-500 focus:bg-white focus:ring-0"
-              value={comment}
-              onChange={handleCommentChange}
-            />
+        <div>
+          <label
+            className="block text-sm font-medium text-gray-700"
+            htmlFor="chapter-feedback-comment"
+          >
+            Comment
           </label>
+          <textarea
+            id="chapter-feedback-comment"
+            className="mt-1 block min-h-24 w-full rounded-md border-gray-300 bg-gray-50 text-gray-950 focus:border-blue-500 focus:ring-blue-500"
+            value={comment}
+            onChange={handleCommentChange}
+          />
         </div>
+        {error && <ErrorMessage message={error} />}
+        {status && <p className="text-sm font-medium text-green-700">{status}</p>}
         <button
           type="submit"
-          key="submit"
-          className="rounded bg-blue-500 py-2 px-4 font-bold text-white hover:bg-blue-700"
+          disabled={isSubmitting}
+          className="w-full rounded-md bg-blue-600 px-4 py-2 font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-gray-400"
         >
-          Submit
+          {isSubmitting ? "Submitting..." : "Submit"}
         </button>
       </form>
     </div>

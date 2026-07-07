@@ -1,20 +1,11 @@
-import { FaSpinner } from "react-icons/fa";
-
 const LoadingComponent = () => {
   return (
     <div
-      style={{
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        // width: "100%",
-        // height: "100vh",
-        backgroundColor: "#fff",
-        padding: "5rem",
-      }}
+      role="status"
+      aria-label="Loading"
+      className="flex items-center justify-center"
     >
-      <FaSpinner className="animate-spin text-4xl text-gray-500" />
-      <p className="ml-2 text-gray-500">Loading</p>
+      <div className="h-32 w-32 animate-spin rounded-full border-b-2 border-blue-500" />
     </div>
   );
 };
