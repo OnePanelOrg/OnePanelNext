@@ -8,6 +8,7 @@ import Header from "../components/Header";
 import Footer from "../components/Footer";
 import { useRouter } from "next/router";
 import ErrorMessage from "../components/ErrorMessage";
+import { trackMarketingEvent } from "../lib/analytics";
 import {
   createBillingPortal,
   createChapter,
@@ -87,10 +88,16 @@ const Home: NextPage = () => {
 
     setLoading(true);
     setError(null);
+    trackMarketingEvent("chapter_url_submitted", {
+      source: "homepage_reader",
+    });
     try {
       const token = await getToken();
       if (!token) throw new Error("Your session expired. Please sign in again.");
       const chapterHash = await createChapter(chapterUrl, token);
+      trackMarketingEvent("chapter_created", {
+        source: "homepage_reader",
+      });
       await router.push(`/chapter/${chapterHash}`);
     } catch (error) {
       setError(
@@ -104,6 +111,12 @@ const Home: NextPage = () => {
   async function redirectToBilling(destination: "checkout" | "portal") {
     setBillingLoading(true);
     setError(null);
+    trackMarketingEvent(
+      destination === "checkout" ? "checkout_started" : "billing_portal_opened",
+      {
+        source: "homepage_reader",
+      },
+    );
     try {
       const token = await getToken();
       if (!token) throw new Error("Your session expired. Please sign in again.");
@@ -111,6 +124,14 @@ const Home: NextPage = () => {
         destination === "checkout"
           ? await createCheckout(token)
           : await createBillingPortal(token);
+      trackMarketingEvent(
+        destination === "checkout"
+          ? "checkout_redirect_created"
+          : "billing_portal_redirect_created",
+        {
+          source: "homepage_reader",
+        },
+      );
       window.location.assign(url);
     } catch (error) {
       setError(

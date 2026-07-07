@@ -41,6 +41,22 @@ avoiding spoilers from the rest of the page.
 - `npm run build` — create a production build
 - `npm start` — serve the production build
 
+## Marketing analytics
+
+Set `NEXT_PUBLIC_GA_MEASUREMENT_ID` to a GA4 measurement ID, for example
+`G-XXXXXXXXXX`, to load Google Analytics and emit launch funnel events:
+
+- `chapter_url_submitted`
+- `chapter_created`
+- `checkout_started`
+- `checkout_redirect_created`
+- `billing_portal_opened`
+- `billing_portal_redirect_created`
+
+Subscription completion should be tracked by the API or Stripe webhook, because
+the frontend cannot reliably observe completed checkout after the user leaves
+the site.
+
 ## Reader behavior
 
 - Navigation stops at the first and last panel instead of wrapping or producing
