@@ -1,4 +1,4 @@
-import { SignInButton, useAuth } from "@clerk/nextjs";
+import { SignInButton, useAuth } from "../../lib/auth";
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useState } from "react";
 import ImageCanvas from "../../components/ImageCanvas";

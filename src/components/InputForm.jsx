@@ -16,7 +16,7 @@ const InputForm = ({ childToParent, disabled = false }) => {
         disabled={disabled}
         value={url}
         onChange={(e) => setUrl(e.target.value)}
-        placeholder="Enter TCB Scans URL"
+        placeholder="Paste an https://opchapters.com chapter URL"
         className="w-full rounded-md border border-gray-300 bg-white px-4 py-2 text-gray-900 focus:border-[#64de9f] focus:outline-none focus:ring-2 focus:ring-[#64de9f] dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:focus:border-[#64de9f]"
       />
       <button

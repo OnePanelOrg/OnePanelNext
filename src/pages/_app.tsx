@@ -1,12 +1,12 @@
-import { ClerkProvider } from "@clerk/nextjs";
 import { type AppType } from "next/dist/shared/lib/utils";
+import { AuthProvider } from "../lib/auth";
 import "../styles/globals.css";
 
 const MyApp: AppType = ({ Component, pageProps }) => {
   return (
-    <ClerkProvider {...pageProps}>
+    <AuthProvider pageProps={pageProps}>
       <Component {...pageProps} />
-    </ClerkProvider>
+    </AuthProvider>
   );
 };
 
