@@ -5,6 +5,10 @@
  */
 !process.env.SKIP_ENV_VALIDATION && (await import("./src/env/server.mjs"));
 
+const apiOrigin =
+  process.env.NEXT_PUBLIC_API_URL ??
+  "https://manga-panel-extractor-production.up.railway.app";
+
 /** @type {import("next").NextConfig} */
 const config = {
   reactStrictMode: true,
@@ -12,6 +16,14 @@ const config = {
   i18n: {
     locales: ["en"],
     defaultLocale: "en",
+  },
+  async rewrites() {
+    return [
+      {
+        source: "/api/onepanel/:path*",
+        destination: `${apiOrigin.replace(/\/$/, "")}/:path*`,
+      },
+    ];
   },
 };
 export default config;

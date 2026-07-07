@@ -1,5 +1,4 @@
 import { z } from "zod";
-import { env } from "../env/client.mjs";
 
 const panelSchema = z.object({
   path: z.string().min(1),
@@ -31,6 +30,7 @@ export type Chapter = z.infer<typeof chapterSchema>;
 export type Subscription = z.infer<typeof subscriptionSchema>;
 
 const API_TIMEOUT_MS = 120_000;
+const API_PROXY_PATH = "/api/onepanel";
 
 export class ApiError extends Error {
   constructor(
@@ -52,7 +52,7 @@ async function request(
 
   try {
     const response = await fetch(
-      `${env.NEXT_PUBLIC_API_URL.replace(/\/$/, "")}${path}`,
+      `${API_PROXY_PATH}${path}`,
       {
         ...init,
         signal: controller.signal,

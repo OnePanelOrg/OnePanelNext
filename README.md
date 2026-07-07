@@ -55,7 +55,8 @@ avoiding spoilers from the rest of the page.
 
 ## Configuration and API contract
 
-The browser calls:
+The browser calls the same-origin `/api/onepanel/*` rewrite, which forwards to
+`NEXT_PUBLIC_API_URL`:
 
 - `POST /v2/chapter` with `{ "chapter_url": "..." }`
 - `GET /v2/chapter/:hash`
@@ -64,8 +65,8 @@ The POST response must contain a non-empty `chapter_hash`. A chapter must contai
 at least one page; every page must contain an image URL and at least one panel
 with a coordinate path.
 
-Because `NEXT_PUBLIC_API_URL` is browser-visible, it must not contain secrets.
-CORS response headers must be configured by the API.
+Because `NEXT_PUBLIC_API_URL` is used by the frontend deployment, it must not
+contain secrets.
 
 ## Authentication and billing
 
