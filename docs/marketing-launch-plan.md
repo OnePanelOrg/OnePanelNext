@@ -25,6 +25,20 @@ Primary offer:
 
 Send three emails to the existing list.
 
+- [x] Email 1: launch
+- [ ] Email 2: use case
+- [ ] Email 3: last call for launch week
+
+Launch send status, July 7, 2026:
+
+- Email 1 was sent through Loops with subject
+  `The new OnePanel Reader is live`.
+- Preview email was verified before the audience send.
+- Loops completed 1,000 sends. The workspace is still over the free-plan
+  contact cap, so the full 1,126-contact subscribed audience could not be sent.
+- Loops reported 12 hard bounces and automatically marked those contacts as
+  unsubscribed, reducing the subscribed audience to 1,114 contacts.
+
 ### Email 1: launch
 
 Subject options:
@@ -185,5 +199,6 @@ Feedback is welcome, especially from people who read on desktop or tablet.
 - Add referral codes for early subscribers.
 - Add a yearly plan once monthly conversion is proven.
 - Add simple testimonials from early users.
-- Add analytics events for chapter URL submitted, checkout started, checkout
-  completed, and billing portal opened.
+- Add analytics events for chapter URL submitted, checkout started, and billing
+  portal opened. Checkout completion should be tracked by the API or Stripe
+  webhook because the frontend cannot reliably observe completed checkout.

@@ -79,7 +79,13 @@ Vercel. Do not remove unrelated MX, TXT, CNAME, or verification records.
 
 ## Loops launch sequence
 
-1. Create a campaign draft using `docs/marketing-launch-plan.md`.
-2. Send a test email first.
-3. Verify all links point to `https://onepanel.app`.
-4. Send to the full audience only after the production deploy is verified.
+1. [x] Create a campaign draft using `docs/marketing-launch-plan.md`.
+2. [x] Send a test email first.
+3. [x] Verify all links point to `https://onepanel.app`.
+4. [x] Send to the audience after the production deploy is verified.
+
+Email 1 was sent through Loops on July 7, 2026. Loops completed 1,000 sends,
+reported 12 hard bounces, and automatically marked those bounced contacts as
+unsubscribed. The workspace still exceeds the Loops free-plan cap with 1,114
+subscribed contacts, so future sends require trimming the audience or upgrading
+Loops.
