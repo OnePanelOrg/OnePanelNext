@@ -3,6 +3,7 @@ import {
   SignInButton,
   SignUpButton,
   UserButton,
+  UserName,
 } from "../lib/auth";
 import Link from "next/link";
 
@@ -15,18 +16,19 @@ const Header = () => {
         </Link>
         <div className="flex items-center gap-3">
           <Show when="signed-out">
-            <SignInButton mode="modal">
+            <SignInButton>
               <button className="rounded-md border border-gray-300 px-3 py-2 font-semibold text-gray-800 hover:bg-gray-100">
                 Sign in
               </button>
             </SignInButton>
-            <SignUpButton mode="modal">
+            <SignUpButton>
               <button className="rounded-md bg-gray-950 px-3 py-2 font-semibold text-white hover:bg-gray-800">
                 Create account
               </button>
             </SignUpButton>
           </Show>
           <Show when="signed-in">
+            <UserName />
             <UserButton />
           </Show>
         </div>

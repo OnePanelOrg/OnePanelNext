@@ -44,6 +44,7 @@ Set these before the first production deploy:
 
 ```text
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=<real Clerk publishable key>
+CLERK_SECRET_KEY=<real Clerk secret key>
 NEXT_PUBLIC_API_URL=https://manga-panel-extractor-production.up.railway.app
 ```
 

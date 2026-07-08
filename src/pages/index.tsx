@@ -1,21 +1,10 @@
 import { type NextPage } from "next";
 import { Show, SignInButton, SignUpButton, useAuth } from "../lib/auth";
 import Head from "next/head";
-import { useCallback, useEffect, useState } from "react";
-import InputForm from "../components/InputForm";
-import LoadingComponent from "../components/Loading";
+import { useEffect } from "react";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import { useRouter } from "next/router";
-import ErrorMessage from "../components/ErrorMessage";
-import { trackMarketingEvent } from "../lib/analytics";
-import {
-  createBillingPortal,
-  createChapter,
-  createCheckout,
-  getSubscription,
-  type Subscription,
-} from "../lib/api";
 
 const audienceHighlights = [
   "Avoid accidental spoilers from full-page chapter scans.",
@@ -29,119 +18,15 @@ const launchProof = [
   { label: "Access", value: "Cancel any time" },
 ];
 
-const readerBenefits = [
-  "Paste an OP Chapters link",
-  "Move through the chapter panel by panel",
-  "Keep surprise reveals off-screen until you are ready",
-  "Manage subscription billing through Stripe",
-];
-
 const Home: NextPage = () => {
-  const [isLoading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [subscription, setSubscription] = useState<Subscription | null>(null);
-  const [isBillingLoading, setBillingLoading] = useState(false);
   const router = useRouter();
-  const { getToken, isLoaded, isSignedIn } = useAuth();
-
-  const loadSubscription = useCallback(async () => {
-    if (!isLoaded || !isSignedIn) {
-      setSubscription(null);
-      return;
-    }
-
-    setBillingLoading(true);
-    setError(null);
-    try {
-      const token = await getToken();
-      if (!token) throw new Error("Your session expired. Please sign in again.");
-      setSubscription(await getSubscription(token));
-    } catch (error) {
-      setError(
-        error instanceof Error
-          ? error.message
-          : "Could not check your subscription.",
-      );
-    } finally {
-      setBillingLoading(false);
-    }
-  }, [getToken, isLoaded, isSignedIn]);
+  const { isLoaded, isSignedIn } = useAuth();
 
   useEffect(() => {
-    void loadSubscription();
-  }, [loadSubscription]);
-
-  function isValidChapterUrl(chapterUrl: string) {
-    try {
-      const url = new URL(chapterUrl);
-      return url.protocol === "https:" && url.hostname === "opchapters.com";
-    } catch {
-      return false;
+    if (isLoaded && isSignedIn) {
+      void router.replace("/reader");
     }
-  }
-
-  async function postUrl(chapterUrl: string) {
-    if (!isValidChapterUrl(chapterUrl)) {
-      setError("Enter a valid https://opchapters.com chapter URL.");
-      return;
-    }
-
-    setLoading(true);
-    setError(null);
-    trackMarketingEvent("chapter_url_submitted", {
-      source: "homepage_reader",
-    });
-    try {
-      const token = await getToken();
-      if (!token) throw new Error("Your session expired. Please sign in again.");
-      const chapterHash = await createChapter(chapterUrl, token);
-      trackMarketingEvent("chapter_created", {
-        source: "homepage_reader",
-      });
-      await router.push(`/chapter/${chapterHash}`);
-    } catch (error) {
-      setError(
-        error instanceof Error ? error.message : "Could not load the chapter.",
-      );
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function redirectToBilling(destination: "checkout" | "portal") {
-    setBillingLoading(true);
-    setError(null);
-    trackMarketingEvent(
-      destination === "checkout" ? "checkout_started" : "billing_portal_opened",
-      {
-        source: "homepage_reader",
-      },
-    );
-    try {
-      const token = await getToken();
-      if (!token) throw new Error("Your session expired. Please sign in again.");
-      const url =
-        destination === "checkout"
-          ? await createCheckout(token)
-          : await createBillingPortal(token);
-      trackMarketingEvent(
-        destination === "checkout"
-          ? "checkout_redirect_created"
-          : "billing_portal_redirect_created",
-        {
-          source: "homepage_reader",
-        },
-      );
-      window.location.assign(url);
-    } catch (error) {
-      setError(
-        error instanceof Error
-          ? error.message
-          : "Could not open Stripe billing.",
-      );
-      setBillingLoading(false);
-    }
-  }
+  }, [isLoaded, isSignedIn, router]);
 
   return (
     <>
@@ -162,7 +47,7 @@ const Home: NextPage = () => {
         <meta property="og:image" content="/icon.png" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <div className="flex min-h-screen flex-col bg-[#f6f4ef] text-gray-950">
+      <div className="flex min-h-screen flex-col overflow-x-hidden bg-[#f6f4ef] text-gray-950">
         <Header />
         <main className="flex-grow">
           <section className="border-b border-gray-200 bg-white">
@@ -176,29 +61,30 @@ const Home: NextPage = () => {
                 </h1>
                 <p className="mt-5 max-w-2xl text-lg leading-8 text-gray-700">
                   OnePanel Reader turns OP Chapters links into a focused,
-                  panel-by-panel reading flow so every reveal lands exactly
-                  when it should.
+                  panel-by-panel reading flow so every reveal lands exactly when
+                  it should.
                 </p>
                 <div className="mt-7 flex flex-col gap-3 sm:flex-row">
                   <Show when="signed-out">
-                    <SignUpButton mode="modal">
+                    <SignUpButton>
                       <button className="rounded-md bg-gray-950 px-5 py-3 text-base font-bold text-white hover:bg-gray-800">
                         Start reading
                       </button>
                     </SignUpButton>
-                    <SignInButton mode="modal">
+                    <SignInButton>
                       <button className="rounded-md border border-gray-300 px-5 py-3 text-base font-bold text-gray-800 hover:bg-gray-100">
                         I already have an account
                       </button>
                     </SignInButton>
                   </Show>
                   <Show when="signed-in">
-                    <a
-                      href="#reader"
+                    <button
+                      type="button"
+                      onClick={() => void router.push("/reader")}
                       className="rounded-md bg-gray-950 px-5 py-3 text-center text-base font-bold text-white hover:bg-gray-800"
                     >
                       Open reader
-                    </a>
+                    </button>
                   </Show>
                 </div>
                 <dl className="mt-9 grid max-w-xl grid-cols-3 gap-3">
@@ -228,21 +114,75 @@ const Home: NextPage = () => {
                       OnePanel Reader
                     </span>
                   </div>
-                  <div className="grid gap-4 p-4 sm:grid-cols-[0.8fr_1.2fr]">
-                    <div className="space-y-3">
-                      <div className="h-24 rounded-sm bg-gray-800" />
-                      <div className="h-32 rounded-sm bg-gray-800" />
-                      <div className="h-20 rounded-sm bg-gray-800" />
+                  <div className="space-y-4 p-4">
+                    <div className="rounded-sm border border-white/10 bg-[#f7f5ef] p-4">
+                      <div className="mb-3 flex items-center justify-between">
+                        <span className="text-xs font-black uppercase tracking-normal text-gray-500">
+                          Step 1
+                        </span>
+                        <span className="rounded-full bg-emerald-100 px-2.5 py-1 text-[0.7rem] font-bold text-emerald-800">
+                          Active
+                        </span>
+                      </div>
+                      <p className="text-sm font-black text-gray-950">
+                        Paste an OP Chapters link
+                      </p>
+                      <div className="mt-3 flex items-center gap-2 rounded-md border border-gray-300 bg-white p-2 shadow-sm">
+                        <span className="min-w-0 flex-1 truncate text-xs font-semibold text-gray-600">
+                          https://opchapters.com/chapters/1138
+                        </span>
+                        <span className="rounded-md bg-gray-950 px-3 py-2 text-xs font-bold text-white">
+                          Load
+                        </span>
+                      </div>
                     </div>
-                    <div className="rounded-sm bg-[#f8f8f3] p-3">
-                      <div className="h-72 rounded-sm border-4 border-gray-950 bg-gradient-to-br from-white via-amber-100 to-emerald-200" />
-                      <div className="mt-3 flex items-center justify-between">
-                        <span className="text-xs font-bold text-gray-700">
-                          Page 08 / Panel 03
-                        </span>
-                        <span className="rounded-full bg-emerald-600 px-3 py-1 text-xs font-bold text-white">
-                          Spoiler-safe
-                        </span>
+
+                    <div className="grid gap-4 sm:grid-cols-[0.7fr_1.3fr]">
+                      <div className="rounded-sm border border-white/10 bg-[#1f2937] p-3">
+                        <div className="mb-3 flex items-center justify-between">
+                          <span className="text-[0.7rem] font-black uppercase tracking-normal text-gray-400">
+                            Step 2
+                          </span>
+                          <span className="h-2 w-2 rounded-full bg-emerald-400" />
+                        </div>
+                        <div className="space-y-2">
+                          <div className="rounded-sm border border-emerald-300 bg-emerald-300/15 p-2">
+                            <div className="h-10 rounded-sm bg-emerald-200/30" />
+                            <p className="mt-2 text-[0.65rem] font-bold text-emerald-100">
+                              Panel 03
+                            </p>
+                          </div>
+                          <div className="rounded-sm bg-gray-800 p-2">
+                            <div className="h-12 rounded-sm bg-gray-700" />
+                            <p className="mt-2 text-[0.65rem] font-bold text-gray-400">
+                              Hidden next
+                            </p>
+                          </div>
+                          <div className="rounded-sm bg-gray-800 p-2">
+                            <div className="h-8 rounded-sm bg-gray-700" />
+                          </div>
+                        </div>
+                      </div>
+                      <div className="rounded-sm bg-[#f8f8f3] p-3">
+                        <div className="flex h-72 items-center justify-center rounded-sm border-4 border-gray-950 bg-[radial-gradient(circle_at_30%_25%,#ffffff_0,#fff6bd_32%,#b8f4d0_68%,#93c5fd_100%)]">
+                          <div className="w-3/4 rounded-md border-2 border-gray-950 bg-white/70 p-4 shadow-lg">
+                            <div className="h-4 w-2/3 rounded-sm bg-gray-950" />
+                            <div className="mt-4 grid grid-cols-3 gap-2">
+                              <div className="h-16 rounded-sm bg-amber-200" />
+                              <div className="h-16 rounded-sm bg-emerald-200" />
+                              <div className="h-16 rounded-sm bg-sky-200" />
+                            </div>
+                            <div className="mt-4 h-3 w-1/2 rounded-sm bg-gray-950" />
+                          </div>
+                        </div>
+                        <div className="mt-3 flex items-center justify-between">
+                          <span className="text-xs font-bold text-gray-700">
+                            Page 08 / Panel 03
+                          </span>
+                          <span className="rounded-full bg-emerald-600 px-3 py-1 text-xs font-bold text-white">
+                            Spoiler-safe
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -262,110 +202,6 @@ const Home: NextPage = () => {
                 </div>
               ))}
             </div>
-          </section>
-
-          <section id="reader" className="container mx-auto px-4 py-10">
-            {!isLoading && isLoaded && (
-              <div className="mx-auto grid max-w-5xl gap-8 lg:grid-cols-[1fr_0.9fr] lg:items-start">
-                <div>
-                  <h2 className="text-3xl font-black text-gray-950">
-                    Paste a chapter and start reading.
-                  </h2>
-                  <p className="mt-3 max-w-2xl text-gray-700">
-                    Works with{" "}
-                    <a
-                      href="https://opchapters.com/"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="font-semibold text-gray-950 underline underline-offset-4 hover:text-gray-700"
-                    >
-                      OP Chapters
-                    </a>{" "}
-                    links. Active subscribers get unlimited access while the
-                    subscription is active.
-                  </p>
-                  <ul className="mt-6 grid gap-3 text-sm font-semibold text-gray-800 sm:grid-cols-2">
-                    {readerBenefits.map((benefit) => (
-                      <li
-                        key={benefit}
-                        className="rounded-md border border-gray-200 bg-white px-4 py-3"
-                      >
-                        {benefit}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-                <div className="rounded-md border border-gray-200 bg-white p-5 shadow-sm">
-                  <Show when="signed-out">
-                    <div className="text-center">
-                      <h2 className="text-2xl font-bold">Join OnePanel Pro</h2>
-                      <p className="my-3 text-3xl font-bold">
-                        €4.99
-                        <span className="text-base font-normal"> / month</span>
-                      </p>
-                      <p className="mb-5 text-sm text-gray-700">
-                        Create an account to subscribe, process chapters, and
-                        manage billing securely through Stripe.
-                      </p>
-                      <SignUpButton mode="modal">
-                        <button className="w-full rounded-md bg-gray-950 px-5 py-3 font-semibold text-white hover:bg-gray-800">
-                          Subscribe now
-                        </button>
-                      </SignUpButton>
-                    </div>
-                  </Show>
-                  <Show when="signed-in">
-                    {isBillingLoading && <LoadingComponent />}
-                    {!isBillingLoading && subscription?.active && (
-                      <>
-                        <InputForm
-                          childToParent={postUrl}
-                          disabled={isLoading}
-                        />
-                        <button
-                          type="button"
-                          onClick={() => void redirectToBilling("portal")}
-                          className="mt-4 w-full text-sm font-semibold text-gray-900 underline underline-offset-4"
-                        >
-                          Manage subscription
-                        </button>
-                      </>
-                    )}
-                    {!isBillingLoading &&
-                      subscription &&
-                      !subscription.active && (
-                        <div className="text-center">
-                          <h2 className="text-2xl font-bold">OnePanel Pro</h2>
-                          <p className="my-3 text-3xl font-bold">
-                            €4.99
-                            <span className="text-base font-normal">
-                              {" "}
-                              / month
-                            </span>
-                          </p>
-                          <p className="mb-5 text-sm text-gray-700">
-                            Unlimited access while your subscription is active.
-                            Cancel any time. No free trial.
-                          </p>
-                          <button
-                            type="button"
-                            onClick={() => void redirectToBilling("checkout")}
-                            className="w-full rounded-md bg-gray-950 px-4 py-3 font-semibold text-white hover:bg-gray-800"
-                          >
-                            Subscribe
-                          </button>
-                        </div>
-                      )}
-                  </Show>
-                  {error && (
-                    <div className="mt-4">
-                      <ErrorMessage message={error} />
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-            {(isLoading || !isLoaded) && <LoadingComponent />}
           </section>
         </main>
         <Footer />
