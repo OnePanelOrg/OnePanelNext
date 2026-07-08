@@ -20,14 +20,6 @@ const config = {
   async rewrites() {
     return [
       {
-        source: "/_clerk/:path*",
-        destination: "/api/_clerk/:path*",
-      },
-      {
-        source: "/__clerk/:path*",
-        destination: "/api/__clerk/:path*",
-      },
-      {
         source: "/api/onepanel/:path*",
         destination: `${apiOrigin.replace(/\/$/, "")}/:path*`,
       },
