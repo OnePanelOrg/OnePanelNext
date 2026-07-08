@@ -44,13 +44,17 @@ Set these before the first production deploy:
 
 ```text
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=<real Clerk publishable key>
+CLERK_SECRET_KEY=<real Clerk secret key>
 NEXT_PUBLIC_API_URL=https://manga-panel-extractor-production.up.railway.app
 ```
 
-Use these **live** keys for the Production environment only. Scope separate
-**development/test** Clerk keys (`pk_test_...`) to the Preview environment —
-Clerk development instances work on any domain out of the box, which is what
-makes auth work on Vercel's per-PR preview URLs without a custom proxy.
+`CLERK_SECRET_KEY` is required even on Preview: Clerk's SDK auto-detects
+`*.vercel.app` preview domains running a live/production publishable key and
+routes Frontend API calls through `/__clerk` on the same origin instead of
+talking to Clerk directly (a preview URL can never be added to Clerk's
+allowed-domains list ahead of time). `src/pages/api/__clerk/[...path].ts`
+implements that proxy and needs the secret key to authenticate the forwarded
+requests to Clerk.
 
 `NEXT_PUBLIC_API_URL` has a default in the app, but setting it explicitly in
 Vercel makes the production dependency clear.
