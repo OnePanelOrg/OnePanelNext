@@ -31,7 +31,8 @@ export default function Page() {
     setData(null);
     try {
       const token = await getToken();
-      if (!token) throw new Error("Your session expired. Please sign in again.");
+      if (!token)
+        throw new Error("Your session expired. Please sign in again.");
       setData(await getChapter(chapterHash, token));
     } catch (error) {
       setError(
@@ -59,7 +60,7 @@ export default function Page() {
           <div className="space-y-4 text-center">
             <ErrorMessage message={error} onRetry={loadChapter} />
             {!isSignedIn && (
-              <SignInButton mode="modal">
+              <SignInButton>
                 <button className="rounded-md bg-blue-600 px-4 py-2 font-semibold text-white">
                   Sign in
                 </button>
