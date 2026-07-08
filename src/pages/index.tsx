@@ -114,77 +114,13 @@ const Home: NextPage = () => {
                       OnePanel Reader
                     </span>
                   </div>
-                  <div className="space-y-4 p-4">
-                    <div className="rounded-sm border border-white/10 bg-[#f7f5ef] p-4">
-                      <div className="mb-3 flex items-center justify-between">
-                        <span className="text-xs font-black uppercase tracking-normal text-gray-500">
-                          Step 1
-                        </span>
-                        <span className="rounded-full bg-emerald-100 px-2.5 py-1 text-[0.7rem] font-bold text-emerald-800">
-                          Active
-                        </span>
-                      </div>
-                      <p className="text-sm font-black text-gray-950">
-                        Paste an OP Chapters link
-                      </p>
-                      <div className="mt-3 flex items-center gap-2 rounded-md border border-gray-300 bg-white p-2 shadow-sm">
-                        <span className="min-w-0 flex-1 truncate text-xs font-semibold text-gray-600">
-                          https://opchapters.com/chapters/1138
-                        </span>
-                        <span className="rounded-md bg-gray-950 px-3 py-2 text-xs font-bold text-white">
-                          Load
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="grid gap-4 sm:grid-cols-[0.7fr_1.3fr]">
-                      <div className="rounded-sm border border-white/10 bg-[#1f2937] p-3">
-                        <div className="mb-3 flex items-center justify-between">
-                          <span className="text-[0.7rem] font-black uppercase tracking-normal text-gray-400">
-                            Step 2
-                          </span>
-                          <span className="h-2 w-2 rounded-full bg-emerald-400" />
-                        </div>
-                        <div className="space-y-2">
-                          <div className="rounded-sm border border-emerald-300 bg-emerald-300/15 p-2">
-                            <div className="h-10 rounded-sm bg-emerald-200/30" />
-                            <p className="mt-2 text-[0.65rem] font-bold text-emerald-100">
-                              Panel 03
-                            </p>
-                          </div>
-                          <div className="rounded-sm bg-gray-800 p-2">
-                            <div className="h-12 rounded-sm bg-gray-700" />
-                            <p className="mt-2 text-[0.65rem] font-bold text-gray-400">
-                              Hidden next
-                            </p>
-                          </div>
-                          <div className="rounded-sm bg-gray-800 p-2">
-                            <div className="h-8 rounded-sm bg-gray-700" />
-                          </div>
-                        </div>
-                      </div>
-                      <div className="rounded-sm bg-[#f8f8f3] p-3">
-                        <div className="flex h-72 items-center justify-center rounded-sm border-4 border-gray-950 bg-[radial-gradient(circle_at_30%_25%,#ffffff_0,#fff6bd_32%,#b8f4d0_68%,#93c5fd_100%)]">
-                          <div className="w-3/4 rounded-md border-2 border-gray-950 bg-white/70 p-4 shadow-lg">
-                            <div className="h-4 w-2/3 rounded-sm bg-gray-950" />
-                            <div className="mt-4 grid grid-cols-3 gap-2">
-                              <div className="h-16 rounded-sm bg-amber-200" />
-                              <div className="h-16 rounded-sm bg-emerald-200" />
-                              <div className="h-16 rounded-sm bg-sky-200" />
-                            </div>
-                            <div className="mt-4 h-3 w-1/2 rounded-sm bg-gray-950" />
-                          </div>
-                        </div>
-                        <div className="mt-3 flex items-center justify-between">
-                          <span className="text-xs font-bold text-gray-700">
-                            Page 08 / Panel 03
-                          </span>
-                          <span className="rounded-full bg-emerald-600 px-3 py-1 text-xs font-bold text-white">
-                            Spoiler-safe
-                          </span>
-                        </div>
-                      </div>
-                    </div>
+                  <div className="flex justify-center p-6">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src="/preview.gif"
+                      alt="OnePanel Reader panel-by-panel preview"
+                      className="w-full max-w-[280px]"
+                    />
                   </div>
                 </div>
               </div>
