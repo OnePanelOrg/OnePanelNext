@@ -26,6 +26,8 @@ const redirectSchema = z.object({
   url: z.string().url(),
 });
 
+const feedbackResponseSchema = z.union([z.object({}).passthrough(), z.null()]);
+
 export type Chapter = z.infer<typeof chapterSchema>;
 export type Subscription = z.infer<typeof subscriptionSchema>;
 
@@ -83,6 +85,11 @@ async function request(
         response.status,
       );
     }
+
+    if (response.status === 204) return null;
+
+    const contentType = response.headers.get("content-type") ?? "";
+    if (!contentType.includes("application/json")) return null;
 
     return await response.json();
   } catch (error) {
@@ -149,4 +156,21 @@ export async function createBillingPortal(token: string): Promise<string> {
     method: "POST",
   });
   return parseResponse(redirectSchema, value).url;
+}
+
+export async function submitFeedback(
+  chapterHash: string,
+  rating: number,
+  comment: string,
+  token: string,
+): Promise<void> {
+  const value = await request("/v2/feedback", token, {
+    method: "POST",
+    body: JSON.stringify({
+      chapter_hash: chapterHash,
+      rating,
+      comment,
+    }),
+  });
+  parseResponse(feedbackResponseSchema, value);
 }

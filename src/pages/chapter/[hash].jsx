@@ -9,6 +9,9 @@ import { getChapter } from "../../lib/api";
 
 export default function Page() {
   const router = useRouter();
+  const chapterHash = Array.isArray(router.query.hash)
+    ? router.query.hash[0]
+    : router.query.hash;
   const [data, setData] = useState(null);
   const [isLoading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -21,10 +24,7 @@ export default function Page() {
       setError("Sign in with an active subscription to read this chapter.");
       return;
     }
-    const hash = Array.isArray(router.query.hash)
-      ? router.query.hash[0]
-      : router.query.hash;
-    if (!hash) return;
+    if (!chapterHash) return;
 
     setLoading(true);
     setError(null);
@@ -32,7 +32,7 @@ export default function Page() {
     try {
       const token = await getToken();
       if (!token) throw new Error("Your session expired. Please sign in again.");
-      setData(await getChapter(hash, token));
+      setData(await getChapter(chapterHash, token));
     } catch (error) {
       setError(
         error instanceof Error ? error.message : "Could not load the chapter.",
@@ -40,7 +40,7 @@ export default function Page() {
     } finally {
       setLoading(false);
     }
-  }, [getToken, isLoaded, isSignedIn, router.isReady, router.query.hash]);
+  }, [chapterHash, getToken, isLoaded, isSignedIn, router.isReady]);
 
   useEffect(() => {
     void loadChapter();
@@ -67,7 +67,9 @@ export default function Page() {
             )}
           </div>
         )}
-        {data && !isLoading && <ImageCanvas data={data}></ImageCanvas>}
+        {data && !isLoading && chapterHash && (
+          <ImageCanvas data={data} chapterHash={chapterHash}></ImageCanvas>
+        )}
       </main>
     </>
   );

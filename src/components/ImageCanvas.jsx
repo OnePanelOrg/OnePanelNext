@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import ImageCanvasControls from "./ImageCanvasControls";
+import FeedbackForm from "./FeedbackForm";
 import ErrorMessage from "./ErrorMessage";
 import { getNextPosition, getPreviousPosition } from "../lib/reader-state.mjs";
 
 const pendingImage = () => ({ status: "loading", image: null });
 
-const ImageCanvas = ({ data }) => {
+const ImageCanvas = ({ data, chapterHash }) => {
   const canvasRef = useRef(null);
   const [imageStates, setImageStates] = useState(() =>
     data.pages.map(pendingImage),
@@ -164,6 +165,7 @@ const ImageCanvas = ({ data }) => {
           currentPanelIndex + 1
         }`}
       />
+      {isAtEnd && <FeedbackForm chapterHash={chapterHash} />}
       <ImageCanvasControls
         currentPageIndex={currentPageIndex}
         currentPanelIndex={currentPanelIndex}
