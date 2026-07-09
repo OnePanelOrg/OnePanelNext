@@ -26,7 +26,7 @@ Primary offer:
 Send three emails to the existing list.
 
 - [x] Email 1: launch
-- [ ] Email 2: use case
+- [x] Email 2: use case
 - [ ] Email 3: last call for launch week
 
 Launch send status, July 7, 2026:
@@ -38,6 +38,14 @@ Launch send status, July 7, 2026:
   contact cap, so the full 1,126-contact subscribed audience could not be sent.
 - Loops reported 12 hard bounces and automatically marked those contacts as
   unsubscribed, reducing the subscribed audience to 1,114 contacts.
+
+Use case send status, July 9, 2026:
+
+- Email 2 was sent through Loops with subject
+  `Stop seeing the next manga reveal too early`.
+- Custom MJML was uploaded through the Loops code editor.
+- Loops completed 1,000 sends. The workspace still displays a free-plan
+  exceeded warning, so sends remain capped below the full subscribed audience.
 
 ### Email 1: launch
 

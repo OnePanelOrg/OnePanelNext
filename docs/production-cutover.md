@@ -98,3 +98,7 @@ reported 12 hard bounces, and automatically marked those bounced contacts as
 unsubscribed. The workspace still exceeds the Loops free-plan cap with 1,114
 subscribed contacts, so future sends require trimming the audience or upgrading
 Loops.
+
+Email 2 was sent through Loops on July 9, 2026 with subject
+`Stop seeing the next manga reveal too early`. Loops completed 1,000 sends and
+continued to show the free-plan exceeded warning.
