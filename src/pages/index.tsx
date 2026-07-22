@@ -18,6 +18,28 @@ const launchProof = [
   { label: "Access", value: "Cancel any time" },
 ];
 
+const softwareJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  name: "OnePanel Reader",
+  applicationCategory: "Entertainment",
+  operatingSystem: "Web",
+  url: "https://onepanel.app",
+  description:
+    "OnePanel Reader is a web app that reveals a manga chapter one panel at a time, so readers never see the next panel or page before they're ready for it.",
+  offers: {
+    "@type": "Offer",
+    price: "4.99",
+    priceCurrency: "EUR",
+    priceSpecification: {
+      "@type": "UnitPriceSpecification",
+      price: "4.99",
+      priceCurrency: "EUR",
+      unitText: "MONTH",
+    },
+  },
+};
+
 const Home: NextPage = () => {
   const router = useRouter();
   const { isLoaded, isSignedIn } = useAuth();
@@ -44,8 +66,18 @@ const Home: NextPage = () => {
           property="og:description"
           content="Paste an OP Chapters URL and read every chapter one panel at a time."
         />
-        <meta property="og:image" content="/icon.png" />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://onepanel.app" />
+        <meta property="og:image" content="https://onepanel.app/og-image.jpg" />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <link rel="canonical" href="https://onepanel.app" />
         <link rel="icon" href="/favicon.ico" />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(softwareJsonLd) }}
+        />
       </Head>
       <div className="flex min-h-screen flex-col overflow-x-hidden bg-[#f6f4ef] text-gray-950">
         <Header />
@@ -60,9 +92,10 @@ const Home: NextPage = () => {
                   Manga chapters without accidental spoilers.
                 </h1>
                 <p className="mt-5 max-w-2xl text-lg leading-8 text-gray-700">
-                  OnePanel Reader turns OP Chapters links into a focused,
-                  panel-by-panel reading flow so every reveal lands exactly when
-                  it should.
+                  OnePanel Reader is a spoiler-free manga reader: paste an OP
+                  Chapters link and it turns the chapter into a focused,
+                  panel-by-panel reading flow so every reveal lands exactly
+                  when it should.
                 </p>
                 <div className="mt-7 flex flex-col gap-3 sm:flex-row">
                   <Show when="signed-out">

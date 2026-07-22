@@ -1,0 +1,27 @@
+# OnePanel Reader
+
+> OnePanel Reader is a web app that reveals a manga chapter one panel at a
+> time, so readers never see the next panel or page before they are ready
+> for it.
+
+OnePanel Reader solves accidental spoilers caused by full-page manga scans:
+on a normal page, the next panel or reveal is often visible in your
+peripheral vision before you mean to read it. OnePanel takes a chapter link
+and turns it into a focused, panel-by-panel reading flow with left/right
+arrow-key navigation.
+
+## Key facts
+
+- OnePanel Reader works with chapter links from https://opchapters.com/.
+- Pricing: OnePanel Pro is EUR 4.99 per month, no free trial, cancel any
+  time. Billing is handled by Stripe.
+- Sign in is required to create and read chapters (Clerk authentication).
+- OnePanel Reader is a web app at https://onepanel.app, not a native app.
+
+## Pages
+
+- [Home](https://onepanel.app/): overview, pricing, and sign-up.
+- [Spoiler-free manga reader guide](https://onepanel.app/spoiler-free-manga-reader):
+  explains the spoiler problem and how panel-by-panel reading fixes it.
+- [FAQ](https://onepanel.app/faq): common questions about pricing, supported
+  sources, and how the reader works.

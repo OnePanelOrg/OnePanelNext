@@ -11,9 +11,25 @@ const Header = () => {
   return (
     <header className="border-b border-gray-200 bg-white/95 shadow-sm backdrop-blur">
       <div className="container mx-auto flex items-center justify-between px-4 py-4">
-        <Link href="/" className="text-xl font-bold text-gray-950 sm:text-2xl">
-          OnePanel Reader
-        </Link>
+        <div className="flex items-center gap-8">
+          <Link
+            href="/"
+            className="text-xl font-bold text-gray-950 sm:text-2xl"
+          >
+            OnePanel Reader
+          </Link>
+          <nav className="hidden items-center gap-5 text-sm font-semibold text-gray-700 sm:flex">
+            <Link
+              href="/spoiler-free-manga-reader"
+              className="hover:text-gray-950"
+            >
+              How it works
+            </Link>
+            <Link href="/faq" className="hover:text-gray-950">
+              FAQ
+            </Link>
+          </nav>
+        </div>
         <div className="flex items-center gap-3">
           <Show when="signed-out">
             <SignInButton>
