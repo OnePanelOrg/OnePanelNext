@@ -143,6 +143,7 @@ const Reader: NextPage = () => {
           name="description"
           content="Paste an OP Chapters URL and start a spoiler-safe panel-by-panel reading flow."
         />
+        <meta name="robots" content="noindex" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <div className="flex min-h-screen flex-col bg-[#f6f4ef] text-gray-950">
