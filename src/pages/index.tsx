@@ -68,7 +68,9 @@ const Home: NextPage = () => {
         />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://onepanel.app" />
-        <meta property="og:image" content="/icon.png" />
+        <meta property="og:image" content="https://onepanel.app/og-image.jpg" />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
         <meta name="twitter:card" content="summary_large_image" />
         <link rel="canonical" href="https://onepanel.app" />
         <link rel="icon" href="/favicon.ico" />

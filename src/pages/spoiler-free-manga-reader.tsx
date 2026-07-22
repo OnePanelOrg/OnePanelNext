@@ -57,7 +57,10 @@ const SpoilerFreeMangaReader: NextPage = () => {
           property="og:url"
           content="https://onepanel.app/spoiler-free-manga-reader"
         />
-        <meta property="og:image" content="/icon.png" />
+        <meta property="og:image" content="https://onepanel.app/og-image.jpg" />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta name="twitter:card" content="summary_large_image" />
         <link
           rel="canonical"
           href="https://onepanel.app/spoiler-free-manga-reader"
