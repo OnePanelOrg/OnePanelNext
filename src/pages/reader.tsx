@@ -2,23 +2,30 @@ import { type NextPage } from "next";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useState } from "react";
+import ChapterComposer, {
+  type ChapterMode,
+} from "../components/ChapterComposer";
 import ErrorMessage from "../components/ErrorMessage";
 import Footer from "../components/Footer";
 import Header from "../components/Header";
-import InputForm from "../components/InputForm";
-import LoadingComponent from "../components/Loading";
-import { Show, SignInButton, SignUpButton, useAuth } from "../lib/auth";
+import UpgradeModal from "../components/UpgradeModal";
+import { useAuth } from "../lib/auth";
 import { trackMarketingEvent } from "../lib/analytics";
 import {
-  createBillingPortal,
   createChapter,
   createCheckout,
   getSubscription,
   type Subscription,
 } from "../lib/api";
+import { normalizeChapterUrl } from "../lib/chapter-url.mjs";
+import {
+  clearPendingChapterRequest,
+  readPendingChapterRequest,
+  writePendingChapterRequest,
+} from "../lib/pending-chapter-request.mjs";
 
 const readerBenefits = [
-  "Paste an OP Chapters link.",
+  "Paste a chapter link from your reader.",
   "Read one panel at a time.",
   "Keep future panels off-screen.",
 ];
@@ -28,6 +35,10 @@ const Reader: NextPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [isBillingLoading, setBillingLoading] = useState(false);
+  const [url, setUrl] = useState("");
+  const [mode, setMode] = useState<ChapterMode>("standard");
+  const [isUpgradeOpen, setUpgradeOpen] = useState(false);
+  const [hasRestored, setHasRestored] = useState(false);
   const router = useRouter();
   const { getToken, isLoaded, isSignedIn } = useAuth();
 
@@ -60,32 +71,97 @@ const Reader: NextPage = () => {
     void loadSubscription();
   }, [loadSubscription]);
 
-  function isValidChapterUrl(chapterUrl: string) {
-    try {
-      const url = new URL(chapterUrl);
-      return url.protocol === "https:" && url.hostname === "opchapters.com";
-    } catch {
-      return false;
+  const redirectToCheckout = useCallback(
+    async (chapterUrl: string, chapterMode: ChapterMode) => {
+      setBillingLoading(true);
+      setError(null);
+      trackMarketingEvent("checkout_continuation", {
+        mode: chapterMode,
+        stage: "started",
+      });
+      try {
+        const token = await getToken();
+        if (!token)
+          throw new Error("Your session expired. Please sign in again.");
+        writePendingChapterRequest(window.sessionStorage, {
+          url: chapterUrl,
+          mode: chapterMode,
+          continuation: "restore",
+        });
+        const checkoutUrl = await createCheckout(token);
+        trackMarketingEvent("checkout_continuation", {
+          mode: chapterMode,
+          stage: "redirect_created",
+        });
+        window.location.assign(checkoutUrl);
+      } catch (error) {
+        setError(
+          error instanceof Error
+            ? error.message
+            : "Could not open Stripe Checkout.",
+        );
+      } finally {
+        setBillingLoading(false);
+      }
+    },
+    [getToken],
+  );
+
+  useEffect(() => {
+    if (!isLoaded || hasRestored) return;
+    const pending = readPendingChapterRequest(window.sessionStorage);
+    setHasRestored(true);
+    if (!pending) return;
+
+    setUrl(pending.url);
+    setMode(pending.mode);
+    if (pending.continuation === "authenticate" && isSignedIn) {
+      trackMarketingEvent("authentication_continuation", {
+        mode: pending.mode,
+        stage: "authenticated",
+      });
+      writePendingChapterRequest(window.sessionStorage, {
+        url: pending.url,
+        mode: pending.mode,
+        continuation: "checkout",
+      });
+      void redirectToCheckout(pending.url, pending.mode);
     }
-  }
+  }, [hasRestored, isLoaded, isSignedIn, redirectToCheckout]);
 
   async function postUrl(chapterUrl: string) {
-    if (!isValidChapterUrl(chapterUrl)) {
-      setError("Enter a valid https://opchapters.com chapter URL.");
+    const normalizedChapterUrl = normalizeChapterUrl(chapterUrl);
+    if (!normalizedChapterUrl) {
+      setError("Enter a valid chapter link.");
+      return;
+    }
+
+    if (mode === "gpt-5.6-layout" && !subscription?.active) {
+      setUrl(normalizedChapterUrl);
+      setUpgradeOpen(true);
+      trackMarketingEvent("upgrade_displayed", {
+        mode,
+        signed_in: isSignedIn,
+      });
       return;
     }
 
     setLoading(true);
     setError(null);
     trackMarketingEvent("chapter_url_submitted", {
+      mode,
       source: "reader_page",
     });
     try {
-      const token = await getToken();
-      if (!token)
-        throw new Error("Your session expired. Please sign in again.");
-      const chapterHash = await createChapter(chapterUrl, token);
+      const token = isSignedIn ? await getToken() : null;
+      const chapterHash = await createChapter(
+        normalizedChapterUrl,
+        mode,
+        token,
+      );
+      clearPendingChapterRequest(window.sessionStorage);
       trackMarketingEvent("chapter_created", {
+        mode,
         source: "reader_page",
       });
       await router.push(`/chapter/${chapterHash}`);
@@ -98,50 +174,13 @@ const Reader: NextPage = () => {
     }
   }
 
-  async function redirectToBilling(destination: "checkout" | "portal") {
-    setBillingLoading(true);
-    setError(null);
-    trackMarketingEvent(
-      destination === "checkout" ? "checkout_started" : "billing_portal_opened",
-      {
-        source: "reader_page",
-      },
-    );
-    try {
-      const token = await getToken();
-      if (!token)
-        throw new Error("Your session expired. Please sign in again.");
-      const url =
-        destination === "checkout"
-          ? await createCheckout(token)
-          : await createBillingPortal(token);
-      trackMarketingEvent(
-        destination === "checkout"
-          ? "checkout_redirect_created"
-          : "billing_portal_redirect_created",
-        {
-          source: "reader_page",
-        },
-      );
-      window.location.assign(url);
-    } catch (error) {
-      setError(
-        error instanceof Error
-          ? error.message
-          : "Could not open Stripe billing.",
-      );
-    } finally {
-      setBillingLoading(false);
-    }
-  }
-
   return (
     <>
       <Head>
         <title>Reader | OnePanel Reader</title>
         <meta
           name="description"
-          content="Paste an OP Chapters URL and start a spoiler-safe panel-by-panel reading flow."
+          content="Paste a manga chapter URL and start a spoiler-safe panel-by-panel reading flow."
         />
         <meta name="robots" content="noindex" />
         <link rel="icon" href="/favicon.ico" />
@@ -158,100 +197,33 @@ const Reader: NextPage = () => {
                 Paste a chapter link.
               </h1>
               <p className="mx-auto mt-4 max-w-2xl text-lg leading-8 text-gray-700">
-                Drop in an{" "}
-                <a
-                  href="https://opchapters.com/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="font-semibold text-gray-950 underline underline-offset-4 hover:text-gray-700"
-                >
-                  OP Chapters
-                </a>{" "}
-                URL and OnePanel will open it as a focused, spoiler-safe reader.
+                Drop in a chapter URL from your manga reader and OnePanel will
+                open it as a focused, spoiler-safe reader.
               </p>
             </section>
 
-            <section className="mx-auto mt-8 rounded-md border border-gray-200 bg-white p-5 shadow-sm sm:p-6">
-              {!isLoaded && <LoadingComponent />}
-              {isLoaded && (
-                <>
-                  <Show when="signed-out">
-                    <div className="text-center">
-                      <h2 className="text-2xl font-bold">Join OnePanel Pro</h2>
-                      <p className="my-3 text-3xl font-bold">
-                        €4.99
-                        <span className="text-base font-normal"> / month</span>
-                      </p>
-                      <p className="mb-5 text-sm text-gray-700">
-                        Create an account to subscribe, process chapters, and
-                        manage billing securely through Stripe.
-                      </p>
-                      <div className="grid gap-3">
-                        <SignUpButton>
-                          <button className="w-full rounded-md bg-gray-950 px-5 py-3 font-semibold text-white hover:bg-gray-800">
-                            Subscribe now
-                          </button>
-                        </SignUpButton>
-                        <SignInButton>
-                          <button className="w-full rounded-md border border-gray-300 px-5 py-3 font-semibold text-gray-800 hover:bg-gray-100">
-                            Sign in
-                          </button>
-                        </SignInButton>
-                      </div>
-                    </div>
-                  </Show>
-                  <Show when="signed-in">
-                    {isBillingLoading && <LoadingComponent />}
-                    {!isBillingLoading && subscription?.active && (
-                      <>
-                        <InputForm
-                          childToParent={postUrl}
-                          disabled={isLoading}
-                        />
-                        {isLoading && (
-                          <p className="mt-3 text-center text-sm font-semibold text-gray-600">
-                            Preparing your panel-by-panel reader.
-                          </p>
-                        )}
-                        <button
-                          type="button"
-                          onClick={() => void redirectToBilling("portal")}
-                          className="mt-4 w-full text-sm font-semibold text-gray-900 underline underline-offset-4"
-                        >
-                          Manage subscription
-                        </button>
-                      </>
-                    )}
-                    {!isBillingLoading &&
-                      subscription &&
-                      !subscription.active && (
-                        <div className="text-center">
-                          <h2 className="text-2xl font-bold">OnePanel Pro</h2>
-                          <p className="my-3 text-3xl font-bold">
-                            €4.99
-                            <span className="text-base font-normal">
-                              {" "}
-                              / month
-                            </span>
-                          </p>
-                          <p className="mb-5 text-sm text-gray-700">
-                            Unlimited access while your subscription is active.
-                            Cancel any time. No free trial.
-                          </p>
-                          <button
-                            type="button"
-                            onClick={() => void redirectToBilling("checkout")}
-                            className="w-full rounded-md bg-gray-950 px-4 py-3 font-semibold text-white hover:bg-gray-800"
-                          >
-                            Subscribe
-                          </button>
-                        </div>
-                      )}
-                  </Show>
-                </>
+            <section className="mx-auto mt-8 overflow-visible rounded-2xl border border-gray-200 bg-white shadow-lg">
+              <ChapterComposer
+                disabled={isLoading}
+                mode={mode}
+                onModeChange={(nextMode) => {
+                  setMode(nextMode);
+                  trackMarketingEvent("mode_selected", {
+                    mode: nextMode,
+                    source: "reader_page",
+                  });
+                }}
+                onSubmit={(chapterUrl) => void postUrl(chapterUrl)}
+                url={url}
+                onUrlChange={setUrl}
+              />
+              {isLoading && (
+                <p className="border-t border-gray-100 px-5 py-3 text-center text-sm font-semibold text-gray-600">
+                  Preparing your panel-by-panel reader.
+                </p>
               )}
               {error && (
-                <div className="mt-4">
+                <div className="px-5 pb-5">
                   <ErrorMessage message={error} />
                 </div>
               )}
@@ -271,6 +243,34 @@ const Reader: NextPage = () => {
         </main>
         <Footer />
       </div>
+      {isUpgradeOpen && (
+        <UpgradeModal
+          isSignedIn={isSignedIn}
+          isLoading={isBillingLoading}
+          onClose={() => setUpgradeOpen(false)}
+          onAuthenticate={() => {
+            const normalized = normalizeChapterUrl(url);
+            trackMarketingEvent("authentication_continuation", {
+              mode,
+              stage: "started",
+            });
+            if (
+              normalized &&
+              writePendingChapterRequest(window.sessionStorage, {
+                url: normalized,
+                mode,
+                continuation: "authenticate",
+              })
+            ) {
+              setUrl(normalized);
+            }
+          }}
+          onContinue={() => {
+            const normalized = normalizeChapterUrl(url);
+            if (normalized) void redirectToCheckout(normalized, mode);
+          }}
+        />
+      )}
     </>
   );
 };

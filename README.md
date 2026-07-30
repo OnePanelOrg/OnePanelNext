@@ -46,13 +46,19 @@ avoiding spoilers from the rest of the page.
 Set `NEXT_PUBLIC_GA_MEASUREMENT_ID` to a GA4 measurement ID, for example
 `G-XXXXXXXXXX`, to load Google Analytics and emit launch funnel events:
 
+- `mode_selected`
 - `chapter_url_submitted`
 - `chapter_created`
+- `upgrade_displayed`
+- `authentication_continuation`
+- `checkout_continuation`
 - `checkout_started`
 - `checkout_redirect_created`
 - `billing_portal_opened`
 - `billing_portal_redirect_created`
 
+Events include only mode, continuation stage, sign-in state, and UI source.
+Chapter URLs, hashes, image paths, and chapter content are never included.
 Subscription completion should be tracked by the API or Stripe webhook, because
 the frontend cannot reliably observe completed checkout after the user leaves
 the site.
@@ -67,33 +73,55 @@ the site.
   without blocking the rest of the chapter.
 - API calls have a two-minute timeout, validate HTTP status and response shape,
   and expose retryable errors to the user.
-- Only HTTPS URLs whose hostname is exactly `opchapters.com` are accepted.
+- Standard chapters can be created and read without an account.
+- GPT-5.6 Layout creation requires OnePanel Pro. Its results can be read by any
+  signed-in account.
+- HTTP(S) chapter URLs from any source are accepted. Bare domains,
+  protocol-relative links, angle-bracket links, and Markdown links are
+  normalized before submission; the API determines whether it can process the
+  source.
 
 ## Configuration and API contract
 
 The browser calls the same-origin `/api/onepanel/*` rewrite, which forwards to
 `NEXT_PUBLIC_API_URL`:
 
-- `POST /v2/chapter` with `{ "chapter_url": "..." }`
+- `POST /v2/chapter` with
+  `{ "chapter_url": "...", "segmentation_mode": "standard" }`
 - `GET /v2/chapter/:hash`
 
 The POST response must contain a non-empty `chapter_hash`. A chapter must contain
 at least one page; every page must contain an image URL and at least one panel
 with a coordinate path.
 
+`segmentation_mode` is either `standard` or `gpt-5.6-layout`; Standard is the
+backward-compatible default. Provider model identifiers are configured only on
+the API and are never accepted from the browser. The API returns stable
+`sign_in_required` and `subscription_required` error codes for access failures.
+
 Because `NEXT_PUBLIC_API_URL` is used by the frontend deployment, it must not
 contain secrets.
 
 ## Authentication and billing
 
-Clerk provides browser authentication. The frontend sends the current Clerk
-session token to the API as a bearer token for every chapter and billing
-request. The API validates that token and enforces an active Stripe subscription
-for chapter creation and retrieval.
+Clerk provides browser authentication. Chapter requests include the current
+Clerk token when one is available; billing requests always require it. The API
+is the authorization boundary: Standard creation and retrieval are public,
+GPT-5.6 Layout creation requires an active Pro subscription, and GPT-5.6 Layout
+retrieval requires any valid signed-in account.
 
 Stripe Checkout sells one €4.99 EUR monthly subscription with no free trial.
 Stripe's Customer Portal handles cancellation and payment-method management.
 The API, not frontend visibility, is the authorization boundary.
+
+When a signed-out or free user selects GPT-5.6 Layout, the browser stores only a
+versioned URL, mode, and continuation stage in `sessionStorage`. The record
+survives authentication and Checkout within that tab, is strictly validated
+before use, and is cleared after successful chapter creation. Returning from
+Checkout restores the composer but never submits automatically.
+
+Deploy the compatible API before this frontend so anonymous Standard requests
+and mode-specific access errors are available when the UI launches.
 
 ## Maintenance
 

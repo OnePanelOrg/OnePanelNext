@@ -56,7 +56,7 @@ const Home: NextPage = () => {
         <title>OnePanel Reader</title>
         <meta
           name="description"
-          content="Read manga chapters one panel at a time. OnePanel Reader turns OP Chapters links into a focused spoiler-safe reading flow."
+          content="Read manga chapters one panel at a time. OnePanel Reader turns chapter links into a focused spoiler-safe reading flow."
         />
         <meta
           property="og:title"
@@ -64,7 +64,7 @@ const Home: NextPage = () => {
         />
         <meta
           property="og:description"
-          content="Paste an OP Chapters URL and read every chapter one panel at a time."
+          content="Paste a manga chapter URL and read every chapter one panel at a time."
         />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://onepanel.app" />

@@ -6,6 +6,7 @@ import Head from "next/head";
 import LoadingComponent from "../../components/Loading";
 import ErrorMessage from "../../components/ErrorMessage";
 import { getChapter } from "../../lib/api";
+import { isChapterSignInRequired } from "../../lib/chapter-access.mjs";
 
 export default function Page() {
   const router = useRouter();
@@ -15,28 +16,31 @@ export default function Page() {
   const [data, setData] = useState(null);
   const [isLoading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [requiresSignIn, setRequiresSignIn] = useState(false);
   const { getToken, isLoaded, isSignedIn } = useAuth();
 
   const loadChapter = useCallback(async () => {
     if (!router.isReady || !isLoaded) return;
-    if (!isSignedIn) {
-      setLoading(false);
-      setError("Sign in with an active subscription to read this chapter.");
-      return;
-    }
     if (!chapterHash) return;
 
     setLoading(true);
     setError(null);
+    setRequiresSignIn(false);
     setData(null);
     try {
-      const token = await getToken();
-      if (!token)
+      const token = isSignedIn ? await getToken() : null;
+      if (isSignedIn && !token)
         throw new Error("Your session expired. Please sign in again.");
       setData(await getChapter(chapterHash, token));
     } catch (error) {
+      const accountRequired = isChapterSignInRequired(error, isSignedIn);
+      setRequiresSignIn(accountRequired);
       setError(
-        error instanceof Error ? error.message : "Could not load the chapter.",
+        accountRequired
+          ? "This GPT-5.6 chapter requires an account. Sign in to continue reading."
+          : error instanceof Error
+            ? error.message
+            : "Could not load the chapter.",
       );
     } finally {
       setLoading(false);
@@ -63,10 +67,13 @@ export default function Page() {
         {error && (
           <div className="space-y-4 text-center">
             <ErrorMessage message={error} onRetry={loadChapter} />
-            {!isSignedIn && (
-              <SignInButton>
+            {requiresSignIn && chapterHash && (
+              <SignInButton
+                fallbackRedirectUrl={`/chapter/${encodeURIComponent(chapterHash)}`}
+                signUpFallbackRedirectUrl={`/chapter/${encodeURIComponent(chapterHash)}`}
+              >
                 <button className="rounded-md bg-blue-600 px-4 py-2 font-semibold text-white">
-                  Sign in
+                  Sign in to read
                 </button>
               </SignInButton>
             )}

@@ -1,4 +1,10 @@
 import { z } from "zod";
+import {
+  DEFAULT_SEGMENTATION_MODE,
+  segmentationModeSchema,
+} from "./segmentation-modes.mjs";
+
+export type SegmentationMode = z.infer<typeof segmentationModeSchema>;
 
 const panelSchema = z.object({
   path: z.string().min(1),
@@ -16,6 +22,14 @@ const chapterSchema = z.object({
 const chapterCreatedSchema = z.object({
   chapter_hash: z.string().min(1),
 });
+
+const accessErrorCodeSchema = z.enum([
+  "sign_in_required",
+  "subscription_required",
+]);
+
+export type ApiErrorCode = z.infer<typeof accessErrorCodeSchema>;
+export type ApiAccessState = "sign-in-required" | "subscription-required";
 
 const subscriptionSchema = z.object({
   active: z.boolean(),
@@ -35,18 +49,27 @@ const API_TIMEOUT_MS = 120_000;
 const API_PROXY_PATH = "/api/onepanel";
 
 export class ApiError extends Error {
+  readonly status?: number;
+  readonly code?: ApiErrorCode;
+  readonly accessState?: ApiAccessState;
+
   constructor(
     message: string,
-    public readonly status?: number,
+    status?: number,
+    code?: ApiErrorCode,
+    accessState?: ApiAccessState,
   ) {
     super(message);
     this.name = "ApiError";
+    this.status = status;
+    this.code = code;
+    this.accessState = accessState;
   }
 }
 
 async function request(
   path: string,
-  token: string,
+  token?: string | null,
   init?: RequestInit,
 ): Promise<unknown> {
   const controller = new AbortController();
@@ -60,7 +83,7 @@ async function request(
         signal: controller.signal,
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
           ...init?.headers,
         },
       },
@@ -73,16 +96,33 @@ async function request(
       } catch {
         detail = null;
       }
-      const message =
-        detail &&
-        typeof detail === "object" &&
-        "detail" in detail &&
-        typeof detail.detail === "string"
+      const errorDetail =
+        detail && typeof detail === "object" && "detail" in detail
           ? detail.detail
-          : `The API returned ${response.status} ${response.statusText}.`;
+          : detail;
+      const errorRecord =
+        errorDetail && typeof errorDetail === "object" ? errorDetail : null;
+      const codeResult = accessErrorCodeSchema.safeParse(
+        errorRecord && "code" in errorRecord ? errorRecord.code : undefined,
+      );
+      const message =
+        typeof errorDetail === "string"
+          ? errorDetail
+          : errorRecord &&
+              "message" in errorRecord &&
+              typeof errorRecord.message === "string"
+            ? errorRecord.message
+            : `The API returned ${response.status} ${response.statusText}.`;
+      const accessState = codeResult.success
+        ? codeResult.data === "sign_in_required"
+          ? "sign-in-required"
+          : "subscription-required"
+        : undefined;
       throw new ApiError(
         message,
         response.status,
+        codeResult.success ? codeResult.data : undefined,
+        accessState,
       );
     }
 
@@ -117,18 +157,23 @@ function parseResponse<T>(schema: z.ZodType<T>, value: unknown): T {
 
 export async function createChapter(
   chapterUrl: string,
-  token: string,
+  mode: SegmentationMode = DEFAULT_SEGMENTATION_MODE,
+  token?: string | null,
 ): Promise<string> {
+  const validatedMode = segmentationModeSchema.parse(mode);
   const value = await request("/v2/chapter", token, {
     method: "POST",
-    body: JSON.stringify({ chapter_url: chapterUrl }),
+    body: JSON.stringify({
+      chapter_url: chapterUrl,
+      segmentation_mode: validatedMode,
+    }),
   });
   return parseResponse(chapterCreatedSchema, value).chapter_hash;
 }
 
 export async function getChapter(
   hash: string,
-  token: string,
+  token?: string | null,
 ): Promise<Chapter> {
   const value = await request(
     `/v2/chapter/${encodeURIComponent(hash)}`,
