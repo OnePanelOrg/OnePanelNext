@@ -1,11 +1,4 @@
-import {
-  Show,
-  SignInButton,
-  SignUpButton,
-  UserButton,
-  UserName,
-  useAuth,
-} from "../lib/auth";
+import { Show, SignInButton, UserButton, UserName, useAuth } from "../lib/auth";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import {
@@ -136,16 +129,17 @@ const Header = () => {
         </div>
         <div className="flex items-center gap-3">
           <Show when="signed-out">
+            <Link
+              href="/reader"
+              className="rounded-md bg-gray-950 px-3 py-2 font-semibold text-white hover:bg-gray-800"
+            >
+              Read free
+            </Link>
             <SignInButton>
               <button className="rounded-md border border-gray-300 px-3 py-2 font-semibold text-gray-800 hover:bg-gray-100">
                 Sign in
               </button>
             </SignInButton>
-            <SignUpButton>
-              <button className="rounded-md bg-gray-950 px-3 py-2 font-semibold text-white hover:bg-gray-800">
-                Create account
-              </button>
-            </SignUpButton>
           </Show>
           <Show when="signed-in">
             <SubscriptionManagement />

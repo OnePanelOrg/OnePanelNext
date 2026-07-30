@@ -23,7 +23,7 @@ const faqs = [
   {
     question: "How much does OnePanel Reader cost?",
     answer:
-      "OnePanel Pro is €4.99 per month, with unlimited access to the reader while your subscription is active. There is no free trial.",
+      "Standard mode is free, with no card or trial required. OnePanel Pro is €4.99 per month and adds GPT‑5.6 Layout for better panel detection on complex page layouts.",
   },
   {
     question: "Can I cancel my subscription any time?",
@@ -33,7 +33,7 @@ const faqs = [
   {
     question: "Do I need an account to use OnePanel Reader?",
     answer:
-      "Yes. You need to sign in and have an active OnePanel Pro subscription to create and read chapters.",
+      "No. You can create and read chapters with Standard mode without an account. Sign in and subscribe to OnePanel Pro when you want to use GPT‑5.6 Layout.",
   },
 ];
 

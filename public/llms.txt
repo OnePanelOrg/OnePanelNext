@@ -13,9 +13,11 @@ arrow-key navigation.
 ## Key facts
 
 - OnePanel Reader works with chapter links from https://opchapters.com/.
-- Pricing: OnePanel Pro is EUR 4.99 per month, no free trial, cancel any
-  time. Billing is handled by Stripe.
-- Sign in is required to create and read chapters (Clerk authentication).
+- Pricing: Standard mode is free with no account or card required. OnePanel
+  Pro is EUR 4.99 per month, adds GPT-5.6 Layout for complex pages, and can be
+  cancelled any time. Billing is handled by Stripe.
+- Standard chapters can be created and read without signing in. An account and
+  active subscription are required for GPT-5.6 Layout creation.
 - OnePanel Reader is a web app at https://onepanel.app, not a native app.
 
 ## Pages

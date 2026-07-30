@@ -8,10 +8,15 @@ panel at a time without accidentally seeing the rest of the page.
 
 Primary offer:
 
-- OnePanel Pro
-- €4.99 per month
-- Unlimited access while subscribed
-- Cancel any time
+- Standard mode is free
+- No account or card required
+- OnePanel Pro adds GPT-5.6 Layout for complex pages
+- €4.99 per month, cancel any time
+
+Core message:
+
+Read manga one panel at a time for free. Upgrade to Pro only when you want
+better panel detection for complex page layouts.
 
 ## Launch goals
 
@@ -111,14 +116,16 @@ Body:
 
 Hi,
 
-Quick final reminder: the new OnePanel Reader is live.
+Quick final reminder: the new OnePanel Reader is live, and Standard mode is
+free.
 
 If you read OP Chapters and want a cleaner, spoiler-safe panel-by-panel flow,
-you can subscribe here:
+you can start here without an account or card:
 
 https://onepanel.app
 
-It is €4.99 per month, with billing handled by Stripe.
+For complex page layouts, Pro adds GPT-5.6 Layout for €4.99 per month, with
+billing handled by Stripe.
 
 Thanks again for checking it out.
 
@@ -137,7 +144,8 @@ Format ideas:
 
 Caption template:
 
-Read OP Chapters one panel at a time. OnePanel Reader is live now for €4.99/mo.
+Read OP Chapters one panel at a time for free. Upgrade to Pro for better
+detection on complex layouts.
 
 Channels:
 
@@ -185,7 +193,8 @@ I kept running into the same problem when reading manga online: full pages often
 show the next reveal before I am ready for it. I built OnePanel Reader to paste
 an OP Chapters link and read the chapter one panel at a time.
 
-The new version is live, faster than the prototype, and costs €4.99/month.
+The new version is live, faster than the prototype, and free to use in
+Standard mode. Pro adds better detection for complex layouts for €4.99/month.
 Feedback is welcome, especially from people who read on desktop or tablet.
 
 ## Metrics to review every week
