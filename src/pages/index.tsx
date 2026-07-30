@@ -1,6 +1,7 @@
 import { type NextPage } from "next";
-import { Show, SignInButton, SignUpButton, useAuth } from "../lib/auth";
+import { Show, SignInButton, useAuth } from "../lib/auth";
 import Head from "next/head";
+import Link from "next/link";
 import { useEffect } from "react";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
@@ -14,8 +15,8 @@ const audienceHighlights = [
 
 const launchProof = [
   { label: "Reader mode", value: "Panel by panel" },
-  { label: "Price", value: "€4.99/mo" },
-  { label: "Access", value: "Cancel any time" },
+  { label: "Standard", value: "Free" },
+  { label: "Pro", value: "€4.99/mo" },
 ];
 
 const softwareJsonLd = {
@@ -27,17 +28,26 @@ const softwareJsonLd = {
   url: "https://onepanel.app",
   description:
     "OnePanel Reader is a web app that reveals a manga chapter one panel at a time, so readers never see the next panel or page before they're ready for it.",
-  offers: {
-    "@type": "Offer",
-    price: "4.99",
-    priceCurrency: "EUR",
-    priceSpecification: {
-      "@type": "UnitPriceSpecification",
+  offers: [
+    {
+      "@type": "Offer",
+      name: "OnePanel Standard",
+      price: "0",
+      priceCurrency: "EUR",
+    },
+    {
+      "@type": "Offer",
+      name: "OnePanel Pro",
       price: "4.99",
       priceCurrency: "EUR",
-      unitText: "MONTH",
+      priceSpecification: {
+        "@type": "UnitPriceSpecification",
+        price: "4.99",
+        priceCurrency: "EUR",
+        unitText: "MONTH",
+      },
     },
-  },
+  ],
 };
 
 const Home: NextPage = () => {
@@ -56,7 +66,7 @@ const Home: NextPage = () => {
         <title>OnePanel Reader</title>
         <meta
           name="description"
-          content="Read manga chapters one panel at a time. OnePanel Reader turns chapter links into a focused spoiler-safe reading flow."
+          content="Read manga chapters one panel at a time for free. OnePanel Reader turns chapter links into a focused spoiler-safe reading flow, with Pro detection for complex layouts."
         />
         <meta
           property="og:title"
@@ -64,7 +74,7 @@ const Home: NextPage = () => {
         />
         <meta
           property="og:description"
-          content="Paste a manga chapter URL and read every chapter one panel at a time."
+          content="Paste a manga chapter URL and read one panel at a time for free. Upgrade only when you want Pro detection for complex layouts."
         />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://onepanel.app" />
@@ -86,7 +96,7 @@ const Home: NextPage = () => {
             <div className="container mx-auto grid gap-10 px-4 py-10 lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:py-16">
               <div>
                 <p className="mb-4 inline-flex rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-sm font-semibold text-emerald-800">
-                  New faster version available now
+                  Now free to start
                 </p>
                 <h1 className="max-w-3xl text-4xl font-black leading-tight tracking-normal text-gray-950 sm:text-5xl lg:text-6xl">
                   Manga chapters without accidental spoilers.
@@ -94,19 +104,21 @@ const Home: NextPage = () => {
                 <p className="mt-5 max-w-2xl text-lg leading-8 text-gray-700">
                   OnePanel Reader is a spoiler-free manga reader: paste an OP
                   Chapters link and it turns the chapter into a focused,
-                  panel-by-panel reading flow so every reveal lands exactly
-                  when it should.
+                  panel-by-panel reading flow so every reveal lands exactly when
+                  it should. Use Standard for free, or upgrade to Pro for better
+                  detection on complex page layouts.
                 </p>
                 <div className="mt-7 flex flex-col gap-3 sm:flex-row">
                   <Show when="signed-out">
-                    <SignUpButton>
-                      <button className="rounded-md bg-gray-950 px-5 py-3 text-base font-bold text-white hover:bg-gray-800">
-                        Start reading
-                      </button>
-                    </SignUpButton>
+                    <Link
+                      href="/reader"
+                      className="rounded-md bg-gray-950 px-5 py-3 text-center text-base font-bold text-white hover:bg-gray-800"
+                    >
+                      Start reading free
+                    </Link>
                     <SignInButton>
                       <button className="rounded-md border border-gray-300 px-5 py-3 text-base font-bold text-gray-800 hover:bg-gray-100">
-                        I already have an account
+                        Sign in
                       </button>
                     </SignInButton>
                   </Show>
@@ -170,6 +182,50 @@ const Home: NextPage = () => {
                   <p className="text-lg font-bold leading-7">{highlight}</p>
                 </div>
               ))}
+            </div>
+          </section>
+
+          <section className="border-b border-gray-200 bg-white">
+            <div className="container mx-auto px-4 py-12">
+              <div className="mx-auto max-w-3xl text-center">
+                <p className="text-sm font-bold uppercase tracking-wider text-emerald-700">
+                  Simple freemium plans
+                </p>
+                <h2 className="mt-2 text-3xl font-black text-gray-950">
+                  Read for free. Upgrade when a page gets complicated.
+                </h2>
+                <p className="mt-3 text-gray-700">
+                  No trial countdown and no card required for Standard mode.
+                </p>
+              </div>
+              <div className="mx-auto mt-8 grid max-w-3xl gap-5 md:grid-cols-2">
+                <article className="rounded-xl border border-gray-200 bg-[#f6f4ef] p-6">
+                  <p className="text-sm font-bold uppercase tracking-wider text-gray-500">
+                    Standard
+                  </p>
+                  <p className="mt-2 text-3xl font-black">Free</p>
+                  <p className="mt-3 text-gray-700">
+                    Fast panel detection for everyday page layouts. Start
+                    reading without an account.
+                  </p>
+                </article>
+                <article className="rounded-xl border-2 border-gray-950 bg-white p-6">
+                  <p className="text-sm font-bold uppercase tracking-wider text-gray-500">
+                    Pro
+                  </p>
+                  <p className="mt-2 text-3xl font-black">
+                    €4.99
+                    <span className="text-base font-semibold text-gray-500">
+                      {" "}
+                      / month
+                    </span>
+                  </p>
+                  <p className="mt-3 text-gray-700">
+                    GPT‑5.6 Layout provides better panel detection for complex
+                    page layouts. Cancel any time.
+                  </p>
+                </article>
+              </div>
             </div>
           </section>
         </main>

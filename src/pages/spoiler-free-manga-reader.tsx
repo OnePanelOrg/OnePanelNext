@@ -1,7 +1,7 @@
 import { type NextPage } from "next";
 import Head from "next/head";
 import Link from "next/link";
-import { Show, SignInButton, SignUpButton } from "../lib/auth";
+import { Show, SignInButton } from "../lib/auth";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 
@@ -42,7 +42,7 @@ const SpoilerFreeMangaReader: NextPage = () => {
         <title>Spoiler-Free Manga Reader | OnePanel Reader</title>
         <meta
           name="description"
-          content="OnePanel Reader is a spoiler-free manga reader that shows OP Chapters links one panel at a time, so the next reveal never shows up before you're ready."
+          content="Read OP Chapters links one panel at a time for free, so the next reveal never shows up before you're ready. Upgrade for Pro detection on complex layouts."
         />
         <meta
           property="og:title"
@@ -50,7 +50,7 @@ const SpoilerFreeMangaReader: NextPage = () => {
         />
         <meta
           property="og:description"
-          content="A panel-by-panel manga reader for OP Chapters that keeps every reveal off-screen until you get to it."
+          content="A free panel-by-panel manga reader for OP Chapters, with optional Pro detection for complex page layouts."
         />
         <meta property="og:type" content="website" />
         <meta
@@ -78,19 +78,21 @@ const SpoilerFreeMangaReader: NextPage = () => {
               <p className="mt-5 text-lg leading-8 text-gray-700">
                 OnePanel Reader is a web app that turns an OP Chapters chapter
                 link into a panel-by-panel reading flow, so you only ever see
-                one panel at a time and every reveal lands exactly when you
-                get to it.
+                one panel at a time and every reveal lands exactly when you get
+                to it. Standard panel detection is free, with no account
+                required.
               </p>
               <div className="mt-7 flex flex-col gap-3 sm:flex-row">
                 <Show when="signed-out">
-                  <SignUpButton>
-                    <button className="rounded-md bg-gray-950 px-5 py-3 text-base font-bold text-white hover:bg-gray-800">
-                      Start reading
-                    </button>
-                  </SignUpButton>
+                  <Link
+                    href="/reader"
+                    className="rounded-md bg-gray-950 px-5 py-3 text-center text-base font-bold text-white hover:bg-gray-800"
+                  >
+                    Start reading free
+                  </Link>
                   <SignInButton>
                     <button className="rounded-md border border-gray-300 px-5 py-3 text-base font-bold text-gray-800 hover:bg-gray-100">
-                      I already have an account
+                      Sign in
                     </button>
                   </SignInButton>
                 </Show>
@@ -163,9 +165,10 @@ const SpoilerFreeMangaReader: NextPage = () => {
                 </a>{" "}
                 and want every reveal to land cleanly, especially readers on
                 desktop or tablet, where a full page shows more of the next
-                panel than a phone screen does. OnePanel Pro costs
-                &euro;4.99 per month, with no free trial, and can be
-                cancelled any time. See the{" "}
+                panel than a phone screen does. Standard mode is free and works
+                without an account. For complex page layouts, OnePanel Pro adds
+                GPT‑5.6 Layout for &euro;4.99 per month and can be cancelled any
+                time. See the{" "}
                 <Link
                   href="/faq"
                   className="font-semibold text-gray-950 underline underline-offset-4 hover:text-gray-700"
