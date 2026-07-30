@@ -50,18 +50,13 @@ const Reader: NextPage = () => {
     }
 
     setBillingLoading(true);
-    setError(null);
     try {
       const token = await getToken();
       if (!token)
         throw new Error("Your session expired. Please sign in again.");
       setSubscription(await getSubscription(token));
-    } catch (error) {
-      setError(
-        error instanceof Error
-          ? error.message
-          : "Could not check your subscription.",
-      );
+    } catch {
+      setSubscription(null);
     } finally {
       setBillingLoading(false);
     }
