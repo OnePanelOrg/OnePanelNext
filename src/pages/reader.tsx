@@ -1,7 +1,7 @@
 import { type NextPage } from "next";
 import Head from "next/head";
 import { useRouter } from "next/router";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import ChapterComposer, {
   type ChapterMode,
 } from "../components/ChapterComposer";
@@ -43,6 +43,7 @@ const Reader: NextPage = () => {
   const [hasRestored, setHasRestored] = useState(false);
   const [sourceMethod, setSourceMethod] = useState<"upload" | "link">("upload");
   const [uploadProgress, setUploadProgress] = useState<number | null>(null);
+  const uploadControllerRef = useRef<AbortController | null>(null);
   const router = useRouter();
   const { getToken, isLoaded, isSignedIn } = useAuth();
 
@@ -69,6 +70,14 @@ const Reader: NextPage = () => {
   useEffect(() => {
     void loadSubscription();
   }, [loadSubscription]);
+
+  useEffect(
+    () => () => {
+      uploadControllerRef.current?.abort();
+      uploadControllerRef.current = null;
+    },
+    [],
+  );
 
   const redirectToCheckout = useCallback(
     async (chapterUrl: string, chapterMode: ChapterMode) => {
@@ -174,6 +183,13 @@ const Reader: NextPage = () => {
   }
 
   async function postFiles(files: File[]) {
+    if (!isSignedIn) {
+      setError("Sign in before uploading a comic or page images.");
+      return;
+    }
+    uploadControllerRef.current?.abort();
+    const controller = new AbortController();
+    uploadControllerRef.current = controller;
     setLoading(true);
     setUploadProgress(0);
     setError(null);
@@ -183,27 +199,35 @@ const Reader: NextPage = () => {
       source: "reader_page",
     });
     try {
-      const token = isSignedIn ? await getToken() : null;
+      const token = await getToken();
+      if (!token)
+        throw new Error("Your session expired. Please sign in again.");
       const { chapterHash } = await createUploadedChapter(
         files,
         "standard",
         token,
         setUploadProgress,
+        controller.signal,
       );
+      if (controller.signal.aborted) return;
       trackMarketingEvent("chapter_upload_created", {
         mode: "standard",
         source: "reader_page",
       });
       await router.push(`/chapter/${chapterHash}`);
     } catch (error) {
+      if (controller.signal.aborted) return;
       setError(
         error instanceof Error
           ? error.message
           : "Could not import the chapter.",
       );
     } finally {
-      setLoading(false);
-      setUploadProgress(null);
+      if (uploadControllerRef.current === controller) {
+        uploadControllerRef.current = null;
+        setLoading(false);
+        setUploadProgress(null);
+      }
     }
   }
 

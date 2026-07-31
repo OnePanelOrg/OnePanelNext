@@ -5,7 +5,7 @@ import ImageCanvas from "../../components/ImageCanvas";
 import Head from "next/head";
 import LoadingComponent from "../../components/Loading";
 import ErrorMessage from "../../components/ErrorMessage";
-import { getChapter } from "../../lib/api";
+import { ApiError, getChapter } from "../../lib/api";
 import { isChapterSignInRequired } from "../../lib/chapter-access.mjs";
 
 export default function Page() {
@@ -17,6 +17,7 @@ export default function Page() {
   const [isLoading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [requiresSignIn, setRequiresSignIn] = useState(false);
+  const [requiresReupload, setRequiresReupload] = useState(false);
   const { getToken, isLoaded, isSignedIn } = useAuth();
 
   const loadChapter = useCallback(async () => {
@@ -26,6 +27,7 @@ export default function Page() {
     setLoading(true);
     setError(null);
     setRequiresSignIn(false);
+    setRequiresReupload(false);
     setData(null);
     try {
       const token = isSignedIn ? await getToken() : null;
@@ -34,10 +36,14 @@ export default function Page() {
       setData(await getChapter(chapterHash, token));
     } catch (error) {
       const accountRequired = isChapterSignInRequired(error, isSignedIn);
+      const reuploadRequired = error instanceof ApiError && error.status === 409;
       setRequiresSignIn(accountRequired);
+      setRequiresReupload(reuploadRequired);
       setError(
         accountRequired
           ? "This GPT-5.6 chapter requires an account. Sign in to continue reading."
+          : reuploadRequired
+            ? "Uploaded chapters are session-only. Re-upload the source to read it again."
           : error instanceof Error
             ? error.message
             : "Could not load the chapter.",
@@ -66,7 +72,10 @@ export default function Page() {
         {isLoading && <LoadingComponent />}
         {error && (
           <div className="space-y-4 text-center">
-            <ErrorMessage message={error} onRetry={loadChapter} />
+            <ErrorMessage
+              message={error}
+              onRetry={requiresReupload ? undefined : loadChapter}
+            />
             {requiresSignIn && chapterHash && (
               <SignInButton
                 fallbackRedirectUrl={`/chapter/${encodeURIComponent(chapterHash)}`}
@@ -76,6 +85,15 @@ export default function Page() {
                   Sign in to read
                 </button>
               </SignInButton>
+            )}
+            {requiresReupload && (
+              <button
+                type="button"
+                onClick={() => void router.push("/reader")}
+                className="rounded-md bg-blue-600 px-4 py-2 font-semibold text-white"
+              >
+                Re-upload chapter
+              </button>
             )}
           </div>
         )}

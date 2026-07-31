@@ -82,6 +82,43 @@ export class ApiError extends Error {
   }
 }
 
+function apiErrorFromResponse(
+  status: number,
+  statusText: string,
+  responseBody: unknown,
+): ApiError {
+  const errorDetail =
+    responseBody &&
+    typeof responseBody === "object" &&
+    "detail" in responseBody
+      ? responseBody.detail
+      : responseBody;
+  const errorRecord =
+    errorDetail && typeof errorDetail === "object" ? errorDetail : null;
+  const codeResult = accessErrorCodeSchema.safeParse(
+    errorRecord && "code" in errorRecord ? errorRecord.code : undefined,
+  );
+  const message =
+    typeof errorDetail === "string"
+      ? errorDetail
+      : errorRecord &&
+          "message" in errorRecord &&
+          typeof errorRecord.message === "string"
+        ? errorRecord.message
+        : `The API returned ${status} ${statusText}.`;
+  const accessState = codeResult.success
+    ? codeResult.data === "sign_in_required"
+      ? "sign-in-required"
+      : "subscription-required"
+    : undefined;
+  return new ApiError(
+    message,
+    status,
+    codeResult.success ? codeResult.data : undefined,
+    accessState,
+  );
+}
+
 async function request(
   path: string,
   token?: string | null,
@@ -108,34 +145,7 @@ async function request(
       } catch {
         detail = null;
       }
-      const errorDetail =
-        detail && typeof detail === "object" && "detail" in detail
-          ? detail.detail
-          : detail;
-      const errorRecord =
-        errorDetail && typeof errorDetail === "object" ? errorDetail : null;
-      const codeResult = accessErrorCodeSchema.safeParse(
-        errorRecord && "code" in errorRecord ? errorRecord.code : undefined,
-      );
-      const message =
-        typeof errorDetail === "string"
-          ? errorDetail
-          : errorRecord &&
-              "message" in errorRecord &&
-              typeof errorRecord.message === "string"
-            ? errorRecord.message
-            : `The API returned ${response.status} ${response.statusText}.`;
-      const accessState = codeResult.success
-        ? codeResult.data === "sign_in_required"
-          ? "sign-in-required"
-          : "subscription-required"
-        : undefined;
-      throw new ApiError(
-        message,
-        response.status,
-        codeResult.success ? codeResult.data : undefined,
-        accessState,
-      );
+      throw apiErrorFromResponse(response.status, response.statusText, detail);
     }
 
     if (response.status === 204) return null;
@@ -188,6 +198,7 @@ export function createUploadedChapter(
   mode: SegmentationMode = DEFAULT_SEGMENTATION_MODE,
   token: string | null,
   onProgress: (progress: number | null) => void,
+  signal?: AbortSignal,
 ): Promise<UploadedChapter> {
   return new Promise((resolve, reject) => {
     const validatedMode = segmentationModeSchema.parse(mode);
@@ -200,6 +211,17 @@ export function createUploadedChapter(
     if (token) request.setRequestHeader("Authorization", `Bearer ${token}`);
     request.responseType = "json";
     request.timeout = UPLOAD_TIMEOUT_MS;
+    const abortRequest = () => request.abort();
+    signal?.addEventListener("abort", abortRequest, { once: true });
+    if (signal?.aborted) {
+      request.abort();
+      reject(new ApiError("Chapter upload was cancelled."));
+      return;
+    }
+    const settle = <T>(callback: (value: T) => void, value: T) => {
+      signal?.removeEventListener("abort", abortRequest);
+      callback(value);
+    };
 
     request.upload.onprogress = (event) => {
       if (!event.lengthComputable) return;
@@ -212,14 +234,14 @@ export function createUploadedChapter(
     };
     request.onload = () => {
       if (request.status < 200 || request.status >= 300) {
-        const detail =
-          request.response &&
-          typeof request.response === "object" &&
-          "detail" in request.response &&
-          typeof request.response.detail === "string"
-            ? request.response.detail
-            : `The API returned ${request.status} ${request.statusText}.`;
-        reject(new ApiError(detail, request.status));
+        settle(
+          reject,
+          apiErrorFromResponse(
+            request.status,
+            request.statusText,
+            request.response,
+          ),
+        );
         return;
       }
       try {
@@ -227,23 +249,30 @@ export function createUploadedChapter(
           uploadedChapterCreatedSchema,
           request.response,
         );
+        transientUploadedChapters.clear();
         transientUploadedChapters.set(result.chapter_hash, result.chapter);
-        resolve({
+        settle(resolve, {
           chapterHash: result.chapter_hash,
           chapter: result.chapter,
         });
       } catch (error) {
-        reject(error);
+        settle(reject, error);
       }
     };
     request.onerror = () =>
-      reject(
-        new ApiError("Could not reach the API while uploading the chapter."),
+      settle(
+        reject,
+        new ApiError(
+          "Could not reach the upload API. Check the API URL and CORS configuration.",
+        ),
       );
     request.ontimeout = () =>
-      reject(new ApiError("Chapter processing timed out. Please try again."));
+      settle(
+        reject,
+        new ApiError("Chapter processing timed out. Please try again."),
+      );
     request.onabort = () =>
-      reject(new ApiError("Chapter upload was cancelled."));
+      settle(reject, new ApiError("Chapter upload was cancelled."));
     request.send(formData);
   });
 }
@@ -253,7 +282,10 @@ export async function getChapter(
   token?: string | null,
 ): Promise<Chapter> {
   const transientChapter = transientUploadedChapters.get(hash);
-  if (transientChapter) return transientChapter;
+  if (transientChapter) {
+    transientUploadedChapters.delete(hash);
+    return transientChapter;
+  }
 
   const value = await request(`/v2/chapter/${encodeURIComponent(hash)}`, token);
   return parseResponse(chapterSchema, value);
