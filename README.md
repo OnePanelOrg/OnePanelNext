@@ -98,6 +98,10 @@ The browser calls the same-origin `/api/onepanel/*` rewrite, which forwards to
 - `GET /v2/chapter/:hash`
 
 Large uploads go directly to `NEXT_PUBLIC_API_URL` instead of traversing the
+Next.js proxy. Uploaded page data remains only in the current browser runtime;
+the API deletes uploaded, extracted, and normalized files after analysis and
+caches only layout JSON. Refreshing an uploaded chapter therefore requires
+re-uploading it, while identical content can reuse the cached analysis.
 Next.js rewrite, so the API must allow the frontend origin through CORS.
 
 The POST response must contain a non-empty `chapter_hash`. A chapter must contain

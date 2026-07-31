@@ -184,7 +184,7 @@ const Reader: NextPage = () => {
     });
     try {
       const token = isSignedIn ? await getToken() : null;
-      const chapterHash = await createUploadedChapter(
+      const { chapterHash } = await createUploadedChapter(
         files,
         "standard",
         token,

@@ -23,6 +23,10 @@ const chapterCreatedSchema = z.object({
   chapter_hash: z.string().min(1),
 });
 
+const uploadedChapterCreatedSchema = chapterCreatedSchema.extend({
+  chapter: chapterSchema,
+});
+
 const accessErrorCodeSchema = z.enum([
   "sign_in_required",
   "subscription_required",
@@ -44,6 +48,14 @@ const feedbackResponseSchema = z.union([z.object({}).passthrough(), z.null()]);
 
 export type Chapter = z.infer<typeof chapterSchema>;
 export type Subscription = z.infer<typeof subscriptionSchema>;
+export type UploadedChapter = {
+  chapterHash: string;
+  chapter: Chapter;
+};
+
+// Uploaded page bytes are deliberately kept only in this JavaScript runtime.
+// The API deletes its temporary copies after returning the analyzed chapter.
+const transientUploadedChapters = new Map<string, Chapter>();
 
 const API_TIMEOUT_MS = 120_000;
 const UPLOAD_TIMEOUT_MS = 10 * 60_000;
@@ -176,7 +188,7 @@ export function createUploadedChapter(
   mode: SegmentationMode = DEFAULT_SEGMENTATION_MODE,
   token: string | null,
   onProgress: (progress: number | null) => void,
-): Promise<string> {
+): Promise<UploadedChapter> {
   return new Promise((resolve, reject) => {
     const validatedMode = segmentationModeSchema.parse(mode);
     const formData = new FormData();
@@ -211,9 +223,15 @@ export function createUploadedChapter(
         return;
       }
       try {
-        resolve(
-          parseResponse(chapterCreatedSchema, request.response).chapter_hash,
+        const result = parseResponse(
+          uploadedChapterCreatedSchema,
+          request.response,
         );
+        transientUploadedChapters.set(result.chapter_hash, result.chapter);
+        resolve({
+          chapterHash: result.chapter_hash,
+          chapter: result.chapter,
+        });
       } catch (error) {
         reject(error);
       }
@@ -234,6 +252,9 @@ export async function getChapter(
   hash: string,
   token?: string | null,
 ): Promise<Chapter> {
+  const transientChapter = transientUploadedChapters.get(hash);
+  if (transientChapter) return transientChapter;
+
   const value = await request(`/v2/chapter/${encodeURIComponent(hash)}`, token);
   return parseResponse(chapterSchema, value);
 }
