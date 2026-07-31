@@ -8,12 +8,14 @@ import ChapterComposer, {
 import ErrorMessage from "../components/ErrorMessage";
 import Footer from "../components/Footer";
 import Header from "../components/Header";
+import UploadForm from "../components/UploadForm";
 import UpgradeModal from "../components/UpgradeModal";
 import { useAuth } from "../lib/auth";
 import { trackMarketingEvent } from "../lib/analytics";
 import {
   createChapter,
   createCheckout,
+  createUploadedChapter,
   getSubscription,
   type Subscription,
 } from "../lib/api";
@@ -25,7 +27,7 @@ import {
 } from "../lib/pending-chapter-request.mjs";
 
 const readerBenefits = [
-  "Paste a chapter link from your reader.",
+  "Import links, comic files, or page images.",
   "Read one panel at a time.",
   "Keep future panels off-screen.",
 ];
@@ -39,6 +41,8 @@ const Reader: NextPage = () => {
   const [mode, setMode] = useState<ChapterMode>("standard");
   const [isUpgradeOpen, setUpgradeOpen] = useState(false);
   const [hasRestored, setHasRestored] = useState(false);
+  const [sourceMethod, setSourceMethod] = useState<"upload" | "link">("upload");
+  const [uploadProgress, setUploadProgress] = useState<number | null>(null);
   const router = useRouter();
   const { getToken, isLoaded, isSignedIn } = useAuth();
 
@@ -169,13 +173,47 @@ const Reader: NextPage = () => {
     }
   }
 
+  async function postFiles(files: File[]) {
+    setLoading(true);
+    setUploadProgress(0);
+    setError(null);
+    trackMarketingEvent("chapter_upload_started", {
+      file_count: files.length,
+      mode: "standard",
+      source: "reader_page",
+    });
+    try {
+      const token = isSignedIn ? await getToken() : null;
+      const chapterHash = await createUploadedChapter(
+        files,
+        "standard",
+        token,
+        setUploadProgress,
+      );
+      trackMarketingEvent("chapter_upload_created", {
+        mode: "standard",
+        source: "reader_page",
+      });
+      await router.push(`/chapter/${chapterHash}`);
+    } catch (error) {
+      setError(
+        error instanceof Error
+          ? error.message
+          : "Could not import the chapter.",
+      );
+    } finally {
+      setLoading(false);
+      setUploadProgress(null);
+    }
+  }
+
   return (
     <>
       <Head>
         <title>Reader | OnePanel Reader</title>
         <meta
           name="description"
-          content="Paste a manga chapter URL and start a spoiler-safe panel-by-panel reading flow."
+          content="Import a comic file, page images, or a chapter URL for spoiler-safe panel-by-panel reading."
         />
         <meta name="robots" content="noindex" />
         <link rel="icon" href="/favicon.ico" />
@@ -189,30 +227,73 @@ const Reader: NextPage = () => {
                 Reader home
               </p>
               <h1 className="text-4xl font-black leading-tight tracking-normal text-gray-950 sm:text-5xl">
-                Paste a chapter link.
+                Bring your own chapter.
               </h1>
               <p className="mx-auto mt-4 max-w-2xl text-lg leading-8 text-gray-700">
-                Drop in a chapter URL from your manga reader and OnePanel will
-                open it as a focused, spoiler-safe reader.
+                Import a comic from your library, your own page scans, or a
+                chapter link. OnePanel turns it into a focused, panel-by-panel
+                reader.
               </p>
             </section>
 
             <section className="mx-auto mt-8 overflow-visible rounded-2xl border border-gray-200 bg-white shadow-lg">
-              <ChapterComposer
-                disabled={isLoading}
-                mode={mode}
-                onModeChange={(nextMode) => {
-                  setMode(nextMode);
-                  trackMarketingEvent("mode_selected", {
-                    mode: nextMode,
-                    source: "reader_page",
-                  });
-                }}
-                onSubmit={(chapterUrl) => void postUrl(chapterUrl)}
-                url={url}
-                onUrlChange={setUrl}
-              />
-              {isLoading && (
+              <div className="grid grid-cols-2 rounded-t-2xl border-b border-gray-200 bg-gray-100 p-1">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSourceMethod("upload");
+                    setError(null);
+                  }}
+                  aria-pressed={sourceMethod === "upload"}
+                  className={`rounded-xl px-3 py-2 text-sm font-bold transition-colors ${
+                    sourceMethod === "upload"
+                      ? "bg-white text-gray-950 shadow-sm"
+                      : "text-gray-600 hover:text-gray-950"
+                  }`}
+                >
+                  Upload files
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSourceMethod("link");
+                    setError(null);
+                  }}
+                  aria-pressed={sourceMethod === "link"}
+                  className={`rounded-xl px-3 py-2 text-sm font-bold transition-colors ${
+                    sourceMethod === "link"
+                      ? "bg-white text-gray-950 shadow-sm"
+                      : "text-gray-600 hover:text-gray-950"
+                  }`}
+                >
+                  Paste link
+                </button>
+              </div>
+              {sourceMethod === "upload" ? (
+                <div className="p-5 sm:p-6">
+                  <UploadForm
+                    childToParent={postFiles}
+                    disabled={isLoading}
+                    progress={uploadProgress}
+                  />
+                </div>
+              ) : (
+                <ChapterComposer
+                  disabled={isLoading}
+                  mode={mode}
+                  onModeChange={(nextMode) => {
+                    setMode(nextMode);
+                    trackMarketingEvent("mode_selected", {
+                      mode: nextMode,
+                      source: "reader_page",
+                    });
+                  }}
+                  onSubmit={(chapterUrl) => void postUrl(chapterUrl)}
+                  url={url}
+                  onUrlChange={setUrl}
+                />
+              )}
+              {isLoading && sourceMethod === "link" && (
                 <p className="border-t border-gray-100 px-5 py-3 text-center text-sm font-semibold text-gray-600">
                   Preparing your panel-by-panel reader.
                 </p>

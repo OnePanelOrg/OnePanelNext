@@ -3,6 +3,9 @@
 OnePanel is a Next.js reader that reveals a manga chapter one panel at a time,
 avoiding spoilers from the rest of the page.
 
+Readers can paste a chapter URL or upload one CBZ, CBR, ZIP, RAR, or PDF file.
+They can also upload multiple page images; filenames determine page order.
+
 ## Requirements
 
 - Node.js 24 LTS
@@ -49,6 +52,8 @@ Set `NEXT_PUBLIC_GA_MEASUREMENT_ID` to a GA4 measurement ID, for example
 - `mode_selected`
 - `chapter_url_submitted`
 - `chapter_created`
+- `chapter_upload_started`
+- `chapter_upload_created`
 - `upgrade_displayed`
 - `authentication_continuation`
 - `checkout_continuation`
@@ -88,7 +93,12 @@ The browser calls the same-origin `/api/onepanel/*` rewrite, which forwards to
 
 - `POST /v2/chapter` with
   `{ "chapter_url": "...", "segmentation_mode": "standard" }`
+- `POST /v2/chapter/upload` as multipart form data with one comic container or
+  multiple page images
 - `GET /v2/chapter/:hash`
+
+Large uploads go directly to `NEXT_PUBLIC_API_URL` instead of traversing the
+Next.js rewrite, so the API must allow the frontend origin through CORS.
 
 The POST response must contain a non-empty `chapter_hash`. A chapter must contain
 at least one page; every page must contain an image URL and at least one panel
