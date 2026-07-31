@@ -10,7 +10,7 @@ import Footer from "../components/Footer";
 import Header from "../components/Header";
 import UploadForm from "../components/UploadForm";
 import UpgradeModal from "../components/UpgradeModal";
-import { useAuth } from "../lib/auth";
+import { SignInButton, useAuth } from "../lib/auth";
 import { trackMarketingEvent } from "../lib/analytics";
 import {
   createChapter,
@@ -295,9 +295,72 @@ const Reader: NextPage = () => {
               </div>
               {sourceMethod === "upload" ? (
                 <div className="p-5 sm:p-6">
+                  <aside
+                    aria-label="How uploaded files are handled"
+                    className="mb-5 overflow-hidden rounded-xl border border-emerald-200 bg-emerald-50/70"
+                  >
+                    <div className="border-b border-emerald-200 px-4 py-3">
+                      <p className="text-xs font-black uppercase tracking-[0.16em] text-emerald-800">
+                        Private by design
+                      </p>
+                      <p className="mt-1 text-sm font-semibold text-gray-950">
+                        Your comic is processed, not collected.
+                      </p>
+                    </div>
+                    <dl className="grid gap-px bg-emerald-200 sm:grid-cols-3">
+                      <div className="bg-white px-4 py-3">
+                        <dt className="text-xs font-bold text-gray-500">
+                          Before upload
+                        </dt>
+                        <dd className="mt-1 text-sm font-semibold text-gray-900">
+                          Sign in is required
+                        </dd>
+                      </div>
+                      <div className="bg-white px-4 py-3">
+                        <dt className="text-xs font-bold text-gray-500">
+                          After analysis
+                        </dt>
+                        <dd className="mt-1 text-sm font-semibold text-gray-900">
+                          Source files are deleted
+                        </dd>
+                      </div>
+                      <div className="bg-white px-4 py-3">
+                        <dt className="text-xs font-bold text-gray-500">
+                          What remains
+                        </dt>
+                        <dd className="mt-1 text-sm font-semibold text-gray-900">
+                          Panel layout JSON only
+                        </dd>
+                      </div>
+                    </dl>
+                    <p className="border-t border-emerald-200 px-4 py-3 text-xs leading-5 text-gray-700">
+                      Uploaded chapters stay available only in this browser
+                      session. Refreshing or reopening one requires the original
+                      files again.
+                    </p>
+                  </aside>
+                  {!isSignedIn && (
+                    <div className="mb-5 rounded-lg border border-gray-200 bg-gray-50 p-4 text-center">
+                      <p className="text-sm font-semibold text-gray-700">
+                        Sign in before choosing your comic files.
+                      </p>
+                      <SignInButton
+                        fallbackRedirectUrl="/reader"
+                        signUpFallbackRedirectUrl="/reader"
+                      >
+                        <button
+                          type="button"
+                          className="mt-3 rounded-md bg-gray-950 px-4 py-2 text-sm font-bold text-white hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2"
+                        >
+                          Sign in to upload
+                        </button>
+                      </SignInButton>
+                    </div>
+                  )}
                   <UploadForm
                     childToParent={postFiles}
                     disabled={isLoading}
+                    locked={!isSignedIn}
                     progress={uploadProgress}
                   />
                 </div>
