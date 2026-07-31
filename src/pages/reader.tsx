@@ -1,19 +1,21 @@
 import { type NextPage } from "next";
 import Head from "next/head";
 import { useRouter } from "next/router";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import ChapterComposer, {
   type ChapterMode,
 } from "../components/ChapterComposer";
 import ErrorMessage from "../components/ErrorMessage";
 import Footer from "../components/Footer";
 import Header from "../components/Header";
+import UploadForm from "../components/UploadForm";
 import UpgradeModal from "../components/UpgradeModal";
-import { useAuth } from "../lib/auth";
+import { SignInButton, useAuth } from "../lib/auth";
 import { trackMarketingEvent } from "../lib/analytics";
 import {
   createChapter,
   createCheckout,
+  createUploadedChapter,
   getSubscription,
   type Subscription,
 } from "../lib/api";
@@ -25,7 +27,7 @@ import {
 } from "../lib/pending-chapter-request.mjs";
 
 const readerBenefits = [
-  "Paste a chapter link from your reader.",
+  "Import links, comic files, or page images.",
   "Read one panel at a time.",
   "Keep future panels off-screen.",
 ];
@@ -39,6 +41,9 @@ const Reader: NextPage = () => {
   const [mode, setMode] = useState<ChapterMode>("standard");
   const [isUpgradeOpen, setUpgradeOpen] = useState(false);
   const [hasRestored, setHasRestored] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<number | null>(null);
+  const uploadControllerRef = useRef<AbortController | null>(null);
+  const signInTriggerRef = useRef<HTMLButtonElement | null>(null);
   const router = useRouter();
   const { getToken, isLoaded, isSignedIn } = useAuth();
 
@@ -65,6 +70,14 @@ const Reader: NextPage = () => {
   useEffect(() => {
     void loadSubscription();
   }, [loadSubscription]);
+
+  useEffect(
+    () => () => {
+      uploadControllerRef.current?.abort();
+      uploadControllerRef.current = null;
+    },
+    [],
+  );
 
   const redirectToCheckout = useCallback(
     async (chapterUrl: string, chapterMode: ChapterMode) => {
@@ -169,13 +182,62 @@ const Reader: NextPage = () => {
     }
   }
 
+  async function postFiles(files: File[]) {
+    if (!isSignedIn) {
+      setError("Sign in before uploading a comic or page images.");
+      return;
+    }
+    uploadControllerRef.current?.abort();
+    const controller = new AbortController();
+    uploadControllerRef.current = controller;
+    setLoading(true);
+    setUploadProgress(0);
+    setError(null);
+    trackMarketingEvent("chapter_upload_started", {
+      file_count: files.length,
+      mode: "standard",
+      source: "reader_page",
+    });
+    try {
+      const token = await getToken();
+      if (!token)
+        throw new Error("Your session expired. Please sign in again.");
+      const { chapterHash } = await createUploadedChapter(
+        files,
+        "standard",
+        token,
+        setUploadProgress,
+        controller.signal,
+      );
+      if (controller.signal.aborted) return;
+      trackMarketingEvent("chapter_upload_created", {
+        mode: "standard",
+        source: "reader_page",
+      });
+      await router.push(`/chapter/${chapterHash}`);
+    } catch (error) {
+      if (controller.signal.aborted) return;
+      setError(
+        error instanceof Error
+          ? error.message
+          : "Could not import the chapter.",
+      );
+    } finally {
+      if (uploadControllerRef.current === controller) {
+        uploadControllerRef.current = null;
+        setLoading(false);
+        setUploadProgress(null);
+      }
+    }
+  }
+
   return (
     <>
       <Head>
         <title>Reader | OnePanel Reader</title>
         <meta
           name="description"
-          content="Paste a manga chapter URL and start a spoiler-safe panel-by-panel reading flow."
+          content="Import a comic file, page images, or a chapter URL for spoiler-safe panel-by-panel reading."
         />
         <meta name="robots" content="noindex" />
         <link rel="icon" href="/favicon.ico" />
@@ -189,36 +251,76 @@ const Reader: NextPage = () => {
                 Reader home
               </p>
               <h1 className="text-4xl font-black leading-tight tracking-normal text-gray-950 sm:text-5xl">
-                Paste a chapter link.
+                Bring your own chapter.
               </h1>
               <p className="mx-auto mt-4 max-w-2xl text-lg leading-8 text-gray-700">
-                Drop in a chapter URL from your manga reader and OnePanel will
-                open it as a focused, spoiler-safe reader.
+                Import a comic from your library, your own page scans, or a
+                chapter link. OnePanel turns it into a focused, panel-by-panel
+                reader.
               </p>
             </section>
 
-            <section className="mx-auto mt-8 overflow-visible rounded-2xl border border-gray-200 bg-white shadow-lg">
-              <ChapterComposer
-                disabled={isLoading}
-                mode={mode}
-                onModeChange={(nextMode) => {
-                  setMode(nextMode);
-                  trackMarketingEvent("mode_selected", {
-                    mode: nextMode,
-                    source: "reader_page",
-                  });
-                }}
-                onSubmit={(chapterUrl) => void postUrl(chapterUrl)}
-                url={url}
-                onUrlChange={setUrl}
-              />
-              {isLoading && (
-                <p className="border-t border-gray-100 px-5 py-3 text-center text-sm font-semibold text-gray-600">
+            <section className="mx-auto mt-8 overflow-visible rounded-2xl border border-gray-200 bg-white p-5 shadow-lg sm:p-6">
+              <div className="mb-5">
+                <p className="text-xs font-black uppercase tracking-[0.16em] text-emerald-700">
+                  Add a chapter
+                </p>
+                <p className="mt-1 text-sm text-gray-600">
+                  Bring the source you already have. OnePanel handles the rest.
+                </p>
+              </div>
+              <div className="space-y-5">
+                <div>
+                  <UploadForm
+                    childToParent={postFiles}
+                    disabled={isLoading}
+                    requiresAuth={!isSignedIn}
+                    onAuthRequired={() => signInTriggerRef.current?.click()}
+                    progress={uploadProgress}
+                  />
+                </div>
+                <div className="flex items-center gap-3" aria-hidden="true">
+                  <span className="h-px flex-1 bg-gray-200" />
+                  <span className="text-xs font-bold uppercase tracking-[0.14em] text-gray-400">
+                    or paste a link
+                  </span>
+                  <span className="h-px flex-1 bg-gray-200" />
+                </div>
+                <div className="overflow-visible rounded-xl border border-gray-200 bg-[#faf9f6]">
+                  <ChapterComposer
+                    disabled={isLoading}
+                    mode={mode}
+                    onModeChange={(nextMode) => {
+                      setMode(nextMode);
+                      trackMarketingEvent("mode_selected", {
+                        mode: nextMode,
+                        source: "reader_page",
+                      });
+                    }}
+                    onSubmit={(chapterUrl) => void postUrl(chapterUrl)}
+                    url={url}
+                    onUrlChange={setUrl}
+                  />
+                </div>
+              </div>
+              <aside
+                aria-label="How uploaded files are handled"
+                className="mt-5 rounded-xl bg-emerald-50 px-4 py-3 text-sm text-emerald-950"
+              >
+                <p className="font-bold">Private by design</p>
+                <p className="mt-1 leading-6 text-emerald-900/80">
+                  File uploads are deleted after analysis. Only panel layout
+                  JSON remains, and you will need the original files again
+                  after this browser session.
+                </p>
+              </aside>
+              {isLoading && uploadProgress === null && (
+                <p className="pt-4 text-center text-sm font-semibold text-gray-600">
                   Preparing your panel-by-panel reader.
                 </p>
               )}
               {error && (
-                <div className="px-5 pb-5">
+                <div className="pt-5">
                   <ErrorMessage message={error} />
                 </div>
               )}
@@ -238,6 +340,22 @@ const Reader: NextPage = () => {
         </main>
         <Footer />
       </div>
+      {!isSignedIn && (
+        <SignInButton
+          mode="modal"
+          fallbackRedirectUrl="/reader"
+          signUpFallbackRedirectUrl="/reader"
+        >
+          <button
+            ref={signInTriggerRef}
+            type="button"
+            className="sr-only"
+            tabIndex={-1}
+          >
+            Sign in to upload
+          </button>
+        </SignInButton>
+      )}
       {isUpgradeOpen && (
         <UpgradeModal
           isSignedIn={isSignedIn}

@@ -23,6 +23,10 @@ const chapterCreatedSchema = z.object({
   chapter_hash: z.string().min(1),
 });
 
+const uploadedChapterCreatedSchema = chapterCreatedSchema.extend({
+  chapter: chapterSchema,
+});
+
 const accessErrorCodeSchema = z.enum([
   "sign_in_required",
   "subscription_required",
@@ -44,9 +48,20 @@ const feedbackResponseSchema = z.union([z.object({}).passthrough(), z.null()]);
 
 export type Chapter = z.infer<typeof chapterSchema>;
 export type Subscription = z.infer<typeof subscriptionSchema>;
+export type UploadedChapter = {
+  chapterHash: string;
+  chapter: Chapter;
+};
+
+// Uploaded page bytes are deliberately kept only in this JavaScript runtime.
+// The API deletes its temporary copies after returning the analyzed chapter.
+const transientUploadedChapters = new Map<string, Chapter>();
 
 const API_TIMEOUT_MS = 120_000;
+const UPLOAD_TIMEOUT_MS = 10 * 60_000;
 const API_PROXY_PATH = "/api/onepanel";
+const UPLOAD_API_ORIGIN =
+  process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") ?? API_PROXY_PATH;
 
 export class ApiError extends Error {
   readonly status?: number;
@@ -67,6 +82,43 @@ export class ApiError extends Error {
   }
 }
 
+function apiErrorFromResponse(
+  status: number,
+  statusText: string,
+  responseBody: unknown,
+): ApiError {
+  const errorDetail =
+    responseBody &&
+    typeof responseBody === "object" &&
+    "detail" in responseBody
+      ? responseBody.detail
+      : responseBody;
+  const errorRecord =
+    errorDetail && typeof errorDetail === "object" ? errorDetail : null;
+  const codeResult = accessErrorCodeSchema.safeParse(
+    errorRecord && "code" in errorRecord ? errorRecord.code : undefined,
+  );
+  const message =
+    typeof errorDetail === "string"
+      ? errorDetail
+      : errorRecord &&
+          "message" in errorRecord &&
+          typeof errorRecord.message === "string"
+        ? errorRecord.message
+        : `The API returned ${status} ${statusText}.`;
+  const accessState = codeResult.success
+    ? codeResult.data === "sign_in_required"
+      ? "sign-in-required"
+      : "subscription-required"
+    : undefined;
+  return new ApiError(
+    message,
+    status,
+    codeResult.success ? codeResult.data : undefined,
+    accessState,
+  );
+}
+
 async function request(
   path: string,
   token?: string | null,
@@ -76,18 +128,15 @@ async function request(
   const timeout = window.setTimeout(() => controller.abort(), API_TIMEOUT_MS);
 
   try {
-    const response = await fetch(
-      `${API_PROXY_PATH}${path}`,
-      {
-        ...init,
-        signal: controller.signal,
-        headers: {
-          "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-          ...init?.headers,
-        },
+    const response = await fetch(`${API_PROXY_PATH}${path}`, {
+      ...init,
+      signal: controller.signal,
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...init?.headers,
       },
-    );
+    });
 
     if (!response.ok) {
       let detail: unknown;
@@ -96,34 +145,7 @@ async function request(
       } catch {
         detail = null;
       }
-      const errorDetail =
-        detail && typeof detail === "object" && "detail" in detail
-          ? detail.detail
-          : detail;
-      const errorRecord =
-        errorDetail && typeof errorDetail === "object" ? errorDetail : null;
-      const codeResult = accessErrorCodeSchema.safeParse(
-        errorRecord && "code" in errorRecord ? errorRecord.code : undefined,
-      );
-      const message =
-        typeof errorDetail === "string"
-          ? errorDetail
-          : errorRecord &&
-              "message" in errorRecord &&
-              typeof errorRecord.message === "string"
-            ? errorRecord.message
-            : `The API returned ${response.status} ${response.statusText}.`;
-      const accessState = codeResult.success
-        ? codeResult.data === "sign_in_required"
-          ? "sign-in-required"
-          : "subscription-required"
-        : undefined;
-      throw new ApiError(
-        message,
-        response.status,
-        codeResult.success ? codeResult.data : undefined,
-        accessState,
-      );
+      throw apiErrorFromResponse(response.status, response.statusText, detail);
     }
 
     if (response.status === 204) return null;
@@ -171,20 +193,105 @@ export async function createChapter(
   return parseResponse(chapterCreatedSchema, value).chapter_hash;
 }
 
+export function createUploadedChapter(
+  files: File[],
+  mode: SegmentationMode = DEFAULT_SEGMENTATION_MODE,
+  token: string | null,
+  onProgress: (progress: number | null) => void,
+  signal?: AbortSignal,
+): Promise<UploadedChapter> {
+  return new Promise((resolve, reject) => {
+    const validatedMode = segmentationModeSchema.parse(mode);
+    const formData = new FormData();
+    files.forEach((file) => formData.append("files", file, file.name));
+    formData.append("segmentation_mode", validatedMode);
+
+    const request = new XMLHttpRequest();
+    request.open("POST", `${UPLOAD_API_ORIGIN}/v2/chapter/upload`);
+    if (token) request.setRequestHeader("Authorization", `Bearer ${token}`);
+    request.responseType = "json";
+    request.timeout = UPLOAD_TIMEOUT_MS;
+    const abortRequest = () => request.abort();
+    signal?.addEventListener("abort", abortRequest, { once: true });
+    if (signal?.aborted) {
+      request.abort();
+      reject(new ApiError("Chapter upload was cancelled."));
+      return;
+    }
+    const settle = <T>(callback: (value: T) => void, value: T) => {
+      signal?.removeEventListener("abort", abortRequest);
+      callback(value);
+    };
+
+    request.upload.onprogress = (event) => {
+      if (!event.lengthComputable) return;
+      const progress = Math.min(
+        100,
+        Math.round((event.loaded / event.total) * 100),
+      );
+      onProgress(progress);
+      if (progress === 100) onProgress(null);
+    };
+    request.onload = () => {
+      if (request.status < 200 || request.status >= 300) {
+        settle(
+          reject,
+          apiErrorFromResponse(
+            request.status,
+            request.statusText,
+            request.response,
+          ),
+        );
+        return;
+      }
+      try {
+        const result = parseResponse(
+          uploadedChapterCreatedSchema,
+          request.response,
+        );
+        transientUploadedChapters.clear();
+        transientUploadedChapters.set(result.chapter_hash, result.chapter);
+        settle(resolve, {
+          chapterHash: result.chapter_hash,
+          chapter: result.chapter,
+        });
+      } catch (error) {
+        settle(reject, error);
+      }
+    };
+    request.onerror = () =>
+      settle(
+        reject,
+        new ApiError(
+          "Could not reach the upload API. Check the API URL and CORS configuration.",
+        ),
+      );
+    request.ontimeout = () =>
+      settle(
+        reject,
+        new ApiError("Chapter processing timed out. Please try again."),
+      );
+    request.onabort = () =>
+      settle(reject, new ApiError("Chapter upload was cancelled."));
+    request.send(formData);
+  });
+}
+
 export async function getChapter(
   hash: string,
   token?: string | null,
 ): Promise<Chapter> {
-  const value = await request(
-    `/v2/chapter/${encodeURIComponent(hash)}`,
-    token,
-  );
+  const transientChapter = transientUploadedChapters.get(hash);
+  if (transientChapter) {
+    transientUploadedChapters.delete(hash);
+    return transientChapter;
+  }
+
+  const value = await request(`/v2/chapter/${encodeURIComponent(hash)}`, token);
   return parseResponse(chapterSchema, value);
 }
 
-export async function getSubscription(
-  token: string,
-): Promise<Subscription> {
+export async function getSubscription(token: string): Promise<Subscription> {
   const value = await request("/v2/billing/status", token);
   return parseResponse(subscriptionSchema, value);
 }

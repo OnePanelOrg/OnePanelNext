@@ -1,13 +1,20 @@
 import assert from "node:assert/strict";
 import test, { afterEach } from "node:test";
-import { ApiError, createChapter, getChapter } from "../src/lib/api.ts";
+import {
+  ApiError,
+  createChapter,
+  createUploadedChapter,
+  getChapter,
+} from "../src/lib/api.ts";
 
 globalThis.window = globalThis;
 
 const originalFetch = globalThis.fetch;
+const originalXMLHttpRequest = globalThis.XMLHttpRequest;
 
 afterEach(() => {
   globalThis.fetch = originalFetch;
+  globalThis.XMLHttpRequest = originalXMLHttpRequest;
 });
 
 function jsonResponse(value, init = {}) {
@@ -81,4 +88,116 @@ test("billing calls remain token-required at the type boundary", async () => {
 
   const { getSubscription } = await import("../src/lib/api.ts");
   await getSubscription("billing-token");
+});
+
+class FakeXMLHttpRequest {
+  static latest;
+
+  upload = {};
+  response = null;
+  status = 0;
+  statusText = "";
+  headers = new Map();
+
+  constructor() {
+    FakeXMLHttpRequest.latest = this;
+  }
+
+  open(method, url) {
+    this.method = method;
+    this.url = url;
+  }
+
+  setRequestHeader(name, value) {
+    this.headers.set(name, value);
+  }
+
+  send(body) {
+    this.body = body;
+  }
+
+  abort() {
+    this.onabort?.();
+  }
+}
+
+test("upload errors preserve structured access details", async () => {
+  globalThis.XMLHttpRequest = FakeXMLHttpRequest;
+  const pending = createUploadedChapter(
+    [new File(["page"], "page.png")],
+    "standard",
+    null,
+    () => {},
+  );
+  const request = FakeXMLHttpRequest.latest;
+  request.status = 401;
+  request.statusText = "Unauthorized";
+  request.response = {
+    detail: {
+      code: "sign_in_required",
+      message: "Sign in before uploading.",
+    },
+  };
+  request.onload();
+
+  await assert.rejects(pending, (error) => {
+    assert.ok(error instanceof ApiError);
+    assert.equal(error.code, "sign_in_required");
+    assert.equal(error.accessState, "sign-in-required");
+    assert.equal(error.message, "Sign in before uploading.");
+    return true;
+  });
+});
+
+test("uploaded chapters are consumed once from transient memory", async () => {
+  globalThis.XMLHttpRequest = FakeXMLHttpRequest;
+  const chapter = {
+    pages: [{ image: "data:image/webp;base64,AA==", panels: [{ path: "0 0" }] }],
+  };
+  const pending = createUploadedChapter(
+    [new File(["page"], "page.png")],
+    "standard",
+    "token",
+    () => {},
+  );
+  const request = FakeXMLHttpRequest.latest;
+  request.status = 200;
+  request.response = { chapter_hash: "transient-upload", chapter };
+  request.onload();
+  await pending;
+
+  globalThis.fetch = async () => {
+    throw new Error("the first read must not call the API");
+  };
+  assert.deepEqual(await getChapter("transient-upload", "token"), chapter);
+
+  globalThis.fetch = async () =>
+    jsonResponse(
+      { detail: "Uploaded chapters are session-only." },
+      { status: 409, statusText: "Conflict" },
+    );
+  await assert.rejects(
+    getChapter("transient-upload", "token"),
+    (error) => error instanceof ApiError && error.status === 409,
+  );
+});
+
+test("aborting an upload aborts its XHR", async () => {
+  globalThis.XMLHttpRequest = FakeXMLHttpRequest;
+  const controller = new AbortController();
+  const pending = createUploadedChapter(
+    [new File(["page"], "page.png")],
+    "standard",
+    "token",
+    () => {},
+    controller.signal,
+  );
+
+  controller.abort();
+
+  await assert.rejects(
+    pending,
+    (error) =>
+      error instanceof ApiError && error.message === "Chapter upload was cancelled.",
+  );
 });
