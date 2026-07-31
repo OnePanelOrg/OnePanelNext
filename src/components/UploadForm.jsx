@@ -9,17 +9,18 @@ import {
  * @param {{
  *   childToParent: (files: File[]) => void | Promise<void>,
  *   disabled?: boolean,
- *   locked?: boolean,
+ *   requiresAuth?: boolean,
+ *   onAuthRequired?: () => void,
  *   progress?: number | null
  * }} props
  */
 const UploadForm = ({
   childToParent,
   disabled = false,
-  locked = false,
+  requiresAuth = false,
+  onAuthRequired,
   progress = null,
 }) => {
-  const unavailable = disabled || locked;
   const inputRef = useRef(null);
   /** @type {[File[], import("react").Dispatch<import("react").SetStateAction<File[]>>]} */
   const [files, setFiles] = useState([]);
@@ -38,6 +39,7 @@ const UploadForm = ({
     }
     setFiles(selected);
     setSelectionError(null);
+    if (requiresAuth) onAuthRequired?.();
   }
 
   function handleSubmit(event) {
@@ -45,6 +47,10 @@ const UploadForm = ({
     const validation = validateChapterFiles(files);
     if (!validation.valid) {
       setSelectionError(validation.message);
+      return;
+    }
+    if (requiresAuth) {
+      onAuthRequired?.();
       return;
     }
     void childToParent(files);
@@ -55,7 +61,7 @@ const UploadForm = ({
       <div
         onDragEnter={(event) => {
           event.preventDefault();
-          if (!unavailable) setDragging(true);
+          if (!disabled) setDragging(true);
         }}
         onDragOver={(event) => event.preventDefault()}
         onDragLeave={(event) => {
@@ -66,20 +72,20 @@ const UploadForm = ({
         onDrop={(event) => {
           event.preventDefault();
           setDragging(false);
-          if (!unavailable) selectFiles(event.dataTransfer.files);
+          if (!disabled) selectFiles(event.dataTransfer.files);
         }}
         className={`relative overflow-hidden rounded-md border-2 border-dashed px-5 py-8 text-center transition-colors ${
           isDragging
             ? "border-emerald-600 bg-emerald-50"
             : "border-gray-300 bg-[#faf9f6]"
-        } ${unavailable ? "cursor-not-allowed opacity-60" : ""}`}
+        } ${disabled ? "cursor-not-allowed opacity-60" : ""}`}
       >
         <input
           ref={inputRef}
           type="file"
           accept={CHAPTER_FILE_ACCEPT}
           multiple
-          disabled={unavailable}
+          disabled={disabled}
           onChange={(event) => selectFiles(event.target.files)}
           className="sr-only"
         />
@@ -91,7 +97,7 @@ const UploadForm = ({
         <p className="mt-2 text-sm leading-6 text-gray-600">
           One CBZ, CBR, ZIP, RAR, or PDF—or a selection of page images.
         </p>
-        {!unavailable && (
+        {!disabled && (
           <button
             type="button"
             onClick={() => inputRef.current?.click()}
@@ -128,14 +134,10 @@ const UploadForm = ({
 
       <button
         type="submit"
-        disabled={unavailable || files.length === 0}
+        disabled={disabled || files.length === 0}
         className="w-full rounded-md bg-gray-950 px-4 py-3 font-bold text-white transition-colors hover:bg-gray-800 disabled:cursor-not-allowed disabled:bg-gray-400"
       >
-        {disabled
-          ? "Preparing chapter…"
-          : locked
-            ? "Sign in to import"
-            : "Import chapter"}
+        {disabled ? "Preparing chapter…" : "Import chapter"}
       </button>
     </form>
   );

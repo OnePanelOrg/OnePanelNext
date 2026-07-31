@@ -41,9 +41,9 @@ const Reader: NextPage = () => {
   const [mode, setMode] = useState<ChapterMode>("standard");
   const [isUpgradeOpen, setUpgradeOpen] = useState(false);
   const [hasRestored, setHasRestored] = useState(false);
-  const [sourceMethod, setSourceMethod] = useState<"upload" | "link">("upload");
   const [uploadProgress, setUploadProgress] = useState<number | null>(null);
   const uploadControllerRef = useRef<AbortController | null>(null);
+  const signInTriggerRef = useRef<HTMLButtonElement | null>(null);
   const router = useRouter();
   const { getToken, isLoaded, isSignedIn } = useAuth();
 
@@ -260,133 +260,67 @@ const Reader: NextPage = () => {
               </p>
             </section>
 
-            <section className="mx-auto mt-8 overflow-visible rounded-2xl border border-gray-200 bg-white shadow-lg">
-              <div className="grid grid-cols-2 rounded-t-2xl border-b border-gray-200 bg-gray-100 p-1">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSourceMethod("upload");
-                    setError(null);
-                  }}
-                  aria-pressed={sourceMethod === "upload"}
-                  className={`rounded-xl px-3 py-2 text-sm font-bold transition-colors ${
-                    sourceMethod === "upload"
-                      ? "bg-white text-gray-950 shadow-sm"
-                      : "text-gray-600 hover:text-gray-950"
-                  }`}
-                >
-                  Upload files
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSourceMethod("link");
-                    setError(null);
-                  }}
-                  aria-pressed={sourceMethod === "link"}
-                  className={`rounded-xl px-3 py-2 text-sm font-bold transition-colors ${
-                    sourceMethod === "link"
-                      ? "bg-white text-gray-950 shadow-sm"
-                      : "text-gray-600 hover:text-gray-950"
-                  }`}
-                >
-                  Paste link
-                </button>
+            <section className="mx-auto mt-8 overflow-visible rounded-2xl border border-gray-200 bg-white p-5 shadow-lg sm:p-6">
+              <div className="mb-5">
+                <p className="text-xs font-black uppercase tracking-[0.16em] text-emerald-700">
+                  Add a chapter
+                </p>
+                <p className="mt-1 text-sm text-gray-600">
+                  Bring the source you already have. OnePanel handles the rest.
+                </p>
               </div>
-              {sourceMethod === "upload" ? (
-                <div className="p-5 sm:p-6">
-                  <aside
-                    aria-label="How uploaded files are handled"
-                    className="mb-5 overflow-hidden rounded-xl border border-emerald-200 bg-emerald-50/70"
-                  >
-                    <div className="border-b border-emerald-200 px-4 py-3">
-                      <p className="text-xs font-black uppercase tracking-[0.16em] text-emerald-800">
-                        Private by design
-                      </p>
-                      <p className="mt-1 text-sm font-semibold text-gray-950">
-                        Your comic is processed, not collected.
-                      </p>
-                    </div>
-                    <dl className="grid gap-px bg-emerald-200 sm:grid-cols-3">
-                      <div className="bg-white px-4 py-3">
-                        <dt className="text-xs font-bold text-gray-500">
-                          Before upload
-                        </dt>
-                        <dd className="mt-1 text-sm font-semibold text-gray-900">
-                          Sign in is required
-                        </dd>
-                      </div>
-                      <div className="bg-white px-4 py-3">
-                        <dt className="text-xs font-bold text-gray-500">
-                          After analysis
-                        </dt>
-                        <dd className="mt-1 text-sm font-semibold text-gray-900">
-                          Source files are deleted
-                        </dd>
-                      </div>
-                      <div className="bg-white px-4 py-3">
-                        <dt className="text-xs font-bold text-gray-500">
-                          What remains
-                        </dt>
-                        <dd className="mt-1 text-sm font-semibold text-gray-900">
-                          Panel layout JSON only
-                        </dd>
-                      </div>
-                    </dl>
-                    <p className="border-t border-emerald-200 px-4 py-3 text-xs leading-5 text-gray-700">
-                      Uploaded chapters stay available only in this browser
-                      session. Refreshing or reopening one requires the original
-                      files again.
-                    </p>
-                  </aside>
-                  {!isSignedIn && (
-                    <div className="mb-5 rounded-lg border border-gray-200 bg-gray-50 p-4 text-center">
-                      <p className="text-sm font-semibold text-gray-700">
-                        Sign in before choosing your comic files.
-                      </p>
-                      <SignInButton
-                        fallbackRedirectUrl="/reader"
-                        signUpFallbackRedirectUrl="/reader"
-                      >
-                        <button
-                          type="button"
-                          className="mt-3 rounded-md bg-gray-950 px-4 py-2 text-sm font-bold text-white hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2"
-                        >
-                          Sign in to upload
-                        </button>
-                      </SignInButton>
-                    </div>
-                  )}
+              <div className="space-y-5">
+                <div>
                   <UploadForm
                     childToParent={postFiles}
                     disabled={isLoading}
-                    locked={!isSignedIn}
+                    requiresAuth={!isSignedIn}
+                    onAuthRequired={() => signInTriggerRef.current?.click()}
                     progress={uploadProgress}
                   />
                 </div>
-              ) : (
-                <ChapterComposer
-                  disabled={isLoading}
-                  mode={mode}
-                  onModeChange={(nextMode) => {
-                    setMode(nextMode);
-                    trackMarketingEvent("mode_selected", {
-                      mode: nextMode,
-                      source: "reader_page",
-                    });
-                  }}
-                  onSubmit={(chapterUrl) => void postUrl(chapterUrl)}
-                  url={url}
-                  onUrlChange={setUrl}
-                />
-              )}
-              {isLoading && sourceMethod === "link" && (
-                <p className="border-t border-gray-100 px-5 py-3 text-center text-sm font-semibold text-gray-600">
+                <div className="flex items-center gap-3" aria-hidden="true">
+                  <span className="h-px flex-1 bg-gray-200" />
+                  <span className="text-xs font-bold uppercase tracking-[0.14em] text-gray-400">
+                    or paste a link
+                  </span>
+                  <span className="h-px flex-1 bg-gray-200" />
+                </div>
+                <div className="overflow-visible rounded-xl border border-gray-200 bg-[#faf9f6]">
+                  <ChapterComposer
+                    disabled={isLoading}
+                    mode={mode}
+                    onModeChange={(nextMode) => {
+                      setMode(nextMode);
+                      trackMarketingEvent("mode_selected", {
+                        mode: nextMode,
+                        source: "reader_page",
+                      });
+                    }}
+                    onSubmit={(chapterUrl) => void postUrl(chapterUrl)}
+                    url={url}
+                    onUrlChange={setUrl}
+                  />
+                </div>
+              </div>
+              <aside
+                aria-label="How uploaded files are handled"
+                className="mt-5 rounded-xl bg-emerald-50 px-4 py-3 text-sm text-emerald-950"
+              >
+                <p className="font-bold">Private by design</p>
+                <p className="mt-1 leading-6 text-emerald-900/80">
+                  File uploads are deleted after analysis. Only panel layout
+                  JSON remains, and you will need the original files again
+                  after this browser session.
+                </p>
+              </aside>
+              {isLoading && uploadProgress === null && (
+                <p className="pt-4 text-center text-sm font-semibold text-gray-600">
                   Preparing your panel-by-panel reader.
                 </p>
               )}
               {error && (
-                <div className="px-5 pb-5">
+                <div className="pt-5">
                   <ErrorMessage message={error} />
                 </div>
               )}
@@ -406,6 +340,22 @@ const Reader: NextPage = () => {
         </main>
         <Footer />
       </div>
+      {!isSignedIn && (
+        <SignInButton
+          mode="modal"
+          fallbackRedirectUrl="/reader"
+          signUpFallbackRedirectUrl="/reader"
+        >
+          <button
+            ref={signInTriggerRef}
+            type="button"
+            className="sr-only"
+            tabIndex={-1}
+          >
+            Sign in to upload
+          </button>
+        </SignInButton>
+      )}
       {isUpgradeOpen && (
         <UpgradeModal
           isSignedIn={isSignedIn}
