@@ -254,17 +254,22 @@ const Reader: NextPage = () => {
                 Bring your own chapter.
               </h1>
               <p className="mx-auto mt-4 max-w-2xl text-lg leading-8 text-gray-700">
-                Import a comic from your library, your own page scans, or a
-                chapter link. OnePanel turns it into a focused, panel-by-panel
+                Import a comic from your library, your own page scans, or an OP
+                Chapters link. OnePanel turns it into a focused, panel-by-panel
                 reader.
               </p>
             </section>
 
             <section className="mx-auto mt-8 overflow-visible rounded-2xl border border-gray-200 bg-white p-5 shadow-lg sm:p-6">
               <div className="mb-5">
-                <p className="text-xs font-black uppercase tracking-[0.16em] text-emerald-700">
-                  Add a chapter
-                </p>
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <p className="text-xs font-black uppercase tracking-[0.16em] text-emerald-700">
+                    Upload a chapter
+                  </p>
+                  <p className="text-xs font-bold text-gray-500">
+                    Account required
+                  </p>
+                </div>
                 <p className="mt-1 text-sm text-gray-600">
                   Bring the source you already have. OnePanel handles the rest.
                 </p>
@@ -285,6 +290,22 @@ const Reader: NextPage = () => {
                     or paste a link
                   </span>
                   <span className="h-px flex-1 bg-gray-200" />
+                </div>
+                <div className="flex flex-wrap items-baseline justify-between gap-2">
+                  <p className="text-sm font-bold text-gray-950">
+                    Paste an OP Chapters link
+                  </p>
+                  <p className="text-sm text-gray-600">
+                    No account needed ·{" "}
+                    <a
+                      href="https://opchapters.com/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-semibold text-emerald-700 underline decoration-emerald-300 underline-offset-4 hover:text-emerald-900"
+                    >
+                      Find a chapter on OP Chapters
+                    </a>
+                  </p>
                 </div>
                 <div className="overflow-visible rounded-xl border border-gray-200 bg-[#faf9f6]">
                   <ChapterComposer
