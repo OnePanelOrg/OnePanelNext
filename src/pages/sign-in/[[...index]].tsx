@@ -12,6 +12,7 @@ const SignIn: NextPage = () => {
           name="description"
           content="Sign in to OnePanel Reader to open your spoiler-safe manga reader."
         />
+        <meta name="robots" content="noindex" />
       </Head>
       <div className="flex min-h-screen flex-col bg-[#f6f4ef] text-gray-950">
         <Header />

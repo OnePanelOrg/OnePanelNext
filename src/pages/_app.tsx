@@ -1,3 +1,4 @@
+import { Analytics } from "@vercel/analytics/react";
 import { type AppType } from "next/dist/shared/lib/utils";
 import Script from "next/script";
 import { gaMeasurementId } from "../lib/analytics";
@@ -26,6 +27,7 @@ const MyApp: AppType = ({ Component, pageProps }) => {
       <AuthProvider pageProps={pageProps}>
         <Component {...pageProps} />
       </AuthProvider>
+      <Analytics />
     </>
   );
 };

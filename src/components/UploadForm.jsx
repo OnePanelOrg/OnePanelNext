@@ -9,10 +9,18 @@ import {
  * @param {{
  *   childToParent: (files: File[]) => void | Promise<void>,
  *   disabled?: boolean,
+ *   requiresAuth?: boolean,
+ *   onAuthRequired?: () => void,
  *   progress?: number | null
  * }} props
  */
-const UploadForm = ({ childToParent, disabled = false, progress = null }) => {
+const UploadForm = ({
+  childToParent,
+  disabled = false,
+  requiresAuth = false,
+  onAuthRequired,
+  progress = null,
+}) => {
   const inputRef = useRef(null);
   /** @type {[File[], import("react").Dispatch<import("react").SetStateAction<File[]>>]} */
   const [files, setFiles] = useState([]);
@@ -31,6 +39,7 @@ const UploadForm = ({ childToParent, disabled = false, progress = null }) => {
     }
     setFiles(selected);
     setSelectionError(null);
+    if (requiresAuth) onAuthRequired?.();
   }
 
   function handleSubmit(event) {
@@ -38,6 +47,10 @@ const UploadForm = ({ childToParent, disabled = false, progress = null }) => {
     const validation = validateChapterFiles(files);
     if (!validation.valid) {
       setSelectionError(validation.message);
+      return;
+    }
+    if (requiresAuth) {
+      onAuthRequired?.();
       return;
     }
     void childToParent(files);

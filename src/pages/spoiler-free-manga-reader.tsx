@@ -146,6 +146,24 @@ const SpoilerFreeMangaReader: NextPage = () => (
                 </li>
               ))}
             </ol>
+            <div className="mx-auto mt-10 max-w-xl overflow-hidden rounded-md border border-gray-200 bg-[#111111] shadow-2xl">
+              <div className="flex items-center gap-2 border-b border-white/10 bg-black px-4 py-3">
+                <span className="h-3 w-3 rounded-full bg-red-400" />
+                <span className="h-3 w-3 rounded-full bg-yellow-300" />
+                <span className="h-3 w-3 rounded-full bg-emerald-400" />
+                <span className="ml-3 text-xs font-semibold text-gray-300">
+                  OnePanel Reader
+                </span>
+              </div>
+              <div className="flex justify-center p-6">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/preview.gif"
+                  alt="OnePanel Reader moving through a manga chapter one panel at a time"
+                  className="w-full max-w-[280px]"
+                />
+              </div>
+            </div>
           </div>
         </section>
 

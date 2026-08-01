@@ -1,38 +1,41 @@
-const SUPPORTED_CHAPTER_HOSTNAME = "opchapters.com";
+const MARKDOWN_LINK_PATTERN = /^\[[^\]]*\]\(\s*(\S+?)\s*\)$/;
 
 /**
- * @typedef {{ valid: true } | {
- *   valid: false,
- *   reason: "invalid_url" | "unsupported_protocol" | "unsupported_provider",
- *   hostname?: string
- * }} ChapterUrlClassification
+ * Normalize the common forms in which readers paste chapter links.
+ *
+ * Source support belongs to the API: the frontend only verifies that the input
+ * is a safe HTTP(S) URL and sends the normalized URL through unchanged.
  */
+export function normalizeChapterUrl(value) {
+  if (typeof value !== "string") return null;
 
-/** @returns {ChapterUrlClassification} */
-export function classifyChapterUrl(chapterUrl) {
-  let url;
+  let candidate = value.trim();
+  const markdownLink = candidate.match(MARKDOWN_LINK_PATTERN);
+  if (markdownLink) candidate = markdownLink[1];
+
+  if (candidate.startsWith("<") && candidate.endsWith(">")) {
+    candidate = candidate.slice(1, -1).trim();
+  }
+
+  if (candidate.startsWith("//")) {
+    candidate = `https:${candidate}`;
+  } else if (!/^[a-z][a-z\d+.-]*:/i.test(candidate)) {
+    candidate = `https://${candidate}`;
+  }
 
   try {
-    url = new URL(chapterUrl);
+    const url = new URL(candidate);
+    if (
+      (url.protocol !== "http:" && url.protocol !== "https:") ||
+      !url.hostname ||
+      url.username ||
+      url.password
+    ) {
+      return null;
+    }
+
+    return url.href;
   } catch {
-    return { valid: false, reason: "invalid_url" };
+    return null;
   }
-
-  if (url.protocol !== "https:") {
-    return {
-      valid: false,
-      reason: "unsupported_protocol",
-      hostname: url.hostname || "unknown",
-    };
-  }
-
-  if (url.hostname !== SUPPORTED_CHAPTER_HOSTNAME) {
-    return {
-      valid: false,
-      reason: "unsupported_provider",
-      hostname: url.hostname,
-    };
-  }
-
-  return { valid: true };
 }
