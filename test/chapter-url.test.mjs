@@ -11,6 +11,12 @@ test("accepts HTTP and HTTPS chapter URLs from any source", () => {
     normalizeChapterUrl("http://reader.example/chapter/12"),
     "http://reader.example/chapter/12",
   );
+  assert.equal(
+    normalizeChapterUrl(
+      "https://tcbonepiecechapters.com/mangas/5/one-piece-chapter-1122/",
+    ),
+    "https://tcbonepiecechapters.com/mangas/5/one-piece-chapter-1122/",
+  );
 });
 
 test("adds HTTPS to bare domains and protocol-relative links", () => {

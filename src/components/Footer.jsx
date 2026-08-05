@@ -26,6 +26,14 @@ const Footer = () => {
           >
             Find OP Chapters
           </a>
+          <a
+            href="https://tcbonepiecechapters.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-semibold text-gray-800 underline underline-offset-4 hover:text-gray-950"
+          >
+            Find TCB Chapters
+          </a>
         </div>
       </div>
     </footer>

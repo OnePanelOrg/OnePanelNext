@@ -8,6 +8,7 @@ import ChapterComposer, {
 import ErrorMessage from "../components/ErrorMessage";
 import Footer from "../components/Footer";
 import Header from "../components/Header";
+import SourceRequestForm from "../components/SourceRequestForm";
 import UploadForm from "../components/UploadForm";
 import UpgradeModal from "../components/UpgradeModal";
 import { SignInButton, useAuth } from "../lib/auth";
@@ -254,9 +255,9 @@ const Reader: NextPage = () => {
                 Bring your own chapter.
               </h1>
               <p className="mx-auto mt-4 max-w-2xl text-lg leading-8 text-gray-700">
-                Import a comic from your library, your own page scans, or an OP
-                Chapters link. OnePanel turns it into a focused, panel-by-panel
-                reader.
+                Import a comic from your library, your own page scans, or a
+                supported chapter link. OnePanel turns it into a focused,
+                panel-by-panel reader.
               </p>
             </section>
 
@@ -293,17 +294,25 @@ const Reader: NextPage = () => {
                 </div>
                 <div className="flex flex-wrap items-baseline justify-between gap-2">
                   <p className="text-sm font-bold text-gray-950">
-                    Paste an OP Chapters link
+                    Paste a supported chapter link
                   </p>
-                  <p className="text-sm text-gray-600">
-                    No account needed ·{" "}
+                  <p className="flex flex-wrap gap-x-3 gap-y-1 text-sm text-gray-600">
+                    <span>No account needed</span>
                     <a
                       href="https://opchapters.com/"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="font-semibold text-emerald-700 underline decoration-emerald-300 underline-offset-4 hover:text-emerald-900"
                     >
-                      Find a chapter on OP Chapters
+                      OP Chapters
+                    </a>
+                    <a
+                      href="https://tcbonepiecechapters.com/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-semibold text-emerald-700 underline decoration-emerald-300 underline-offset-4 hover:text-emerald-900"
+                    >
+                      TCB One Piece Chapters
                     </a>
                   </p>
                 </div>
@@ -331,8 +340,8 @@ const Reader: NextPage = () => {
                 <p className="font-bold">Private by design</p>
                 <p className="mt-1 leading-6 text-emerald-900/80">
                   File uploads are deleted after analysis. Only panel layout
-                  JSON remains, and you will need the original files again
-                  after this browser session.
+                  JSON remains, and you will need the original files again after
+                  this browser session.
                 </p>
               </aside>
               {isLoading && uploadProgress === null && (
@@ -357,6 +366,7 @@ const Reader: NextPage = () => {
                 </li>
               ))}
             </ul>
+            <SourceRequestForm />
           </div>
         </main>
         <Footer />

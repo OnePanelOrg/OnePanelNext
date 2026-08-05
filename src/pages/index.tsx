@@ -10,7 +10,7 @@ import { useRouter } from "next/router";
 const audienceHighlights = [
   "Avoid accidental spoilers from full-page chapter scans.",
   "Read one clean panel at a time on phone, tablet, or desktop.",
-  "Jump from OP Chapters to a focused reader in seconds.",
+  "Jump from OP Chapters or TCB to a focused reader in seconds.",
 ];
 
 const launchProof = [
@@ -103,7 +103,7 @@ const Home: NextPage = () => {
                 </h1>
                 <p className="mt-5 max-w-2xl text-lg leading-8 text-gray-700">
                   OnePanel Reader is a spoiler-free manga reader: paste an OP
-                  Chapters link and it turns the chapter into a focused,
+                  Chapters or TCB link and it turns the chapter into a focused,
                   panel-by-panel reading flow so every reveal lands exactly when
                   it should. Use Standard for free, or upgrade to Pro for better
                   detection on complex page layouts.
