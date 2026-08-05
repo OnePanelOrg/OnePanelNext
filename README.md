@@ -143,3 +143,24 @@ and mode-specific access errors are available when the UI launches.
 The project currently uses the Pages Router on Next.js 15 and targets Node.js
 24 LTS. Run `npm audit` when updating dependencies and commit
 `package-lock.json` with dependency changes.
+
+### Source compatibility monitor
+
+The `Source compatibility monitor` GitHub Actions workflow runs daily and can
+also be started manually. It creates a Standard chapter through the deployed
+API, validates the returned chapter, and checks that every page is a reachable
+JPEG, PNG, GIF, WebP, or AVIF image whose declared content type matches its
+bytes.
+
+Configure these GitHub Actions repository secrets:
+
+- `MONITOR_API_URL`: the deployed API origin, without `/v2/chapter`
+- `MONITOR_CHAPTER_URLS`: a JSON array containing one stable, public chapter
+  URL per supported source, for example `["https://source.example/chapter-1"]`
+- `TELEGRAM_BOT_TOKEN`: token created with Telegram's BotFather
+- `TELEGRAM_CHAT_ID`: the destination user, group, or channel chat ID
+
+Add only chapters you are allowed to fetch, prefer small stable fixtures, and
+avoid URLs containing credentials because GitHub Actions logs show source host
+names. Run the same check locally with `npm run monitor:sources` after exporting
+`MONITOR_API_URL` and `MONITOR_CHAPTER_URLS`.
