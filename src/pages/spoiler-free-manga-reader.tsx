@@ -23,7 +23,7 @@ const spoilerCauses = [
 const steps = [
   {
     title: "Bring your own chapter",
-    body: "Upload a CBZ, CBR, ZIP, RAR, or PDF comic, select multiple page images, or paste an OP Chapters link.",
+    body: "Upload a CBZ, CBR, ZIP, RAR, or PDF comic, select multiple page images, or paste an OP Chapters or TCB link.",
   },
   {
     title: "OnePanel builds a panel-by-panel flow",
@@ -67,7 +67,7 @@ const SpoilerFreeMangaReader: NextPage = () => (
       <title>Spoiler-Free Manga Reader | OnePanel Reader</title>
       <meta
         name="description"
-        content="Turn your comic files, page images, or OP Chapters links into a spoiler-free panel-by-panel manga reader. Standard detection is free."
+        content="Turn your comic files, page images, or OP Chapters and TCB links into a spoiler-free panel-by-panel manga reader. Standard detection is free."
       />
       <meta
         property="og:title"
@@ -101,9 +101,10 @@ const SpoilerFreeMangaReader: NextPage = () => (
               A spoiler-free manga reader for your own chapters
             </h1>
             <p className="mt-5 text-lg leading-8 text-gray-700">
-              OnePanel Reader turns comic files, page images, and OP Chapters
-              links into a panel-by-panel reading flow, so every reveal lands
-              exactly when you get to it. Standard panel detection is free.
+              OnePanel Reader turns comic files, page images, and OP Chapters or
+              TCB links into a panel-by-panel reading flow, so every reveal
+              lands exactly when you get to it. Standard panel detection is
+              free.
             </p>
             <ReaderCta />
           </div>
@@ -182,6 +183,15 @@ const SpoilerFreeMangaReader: NextPage = () => (
                 className="font-semibold text-gray-950 underline underline-offset-4 hover:text-gray-700"
               >
                 OP Chapters
+              </a>{" "}
+              or{" "}
+              <a
+                href="https://tcbonepiecechapters.com/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-semibold text-gray-950 underline underline-offset-4 hover:text-gray-700"
+              >
+                TCB One Piece Chapters
               </a>
               . Uploaded files require an account and are deleted after
               analysis; only the panel layout remains for the current browser

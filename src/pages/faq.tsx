@@ -18,7 +18,7 @@ const faqs = [
   {
     question: "Which chapter sources does OnePanel Reader support?",
     answer:
-      "You can upload one CBZ, CBR, ZIP, RAR, or PDF comic, select multiple JPG, JPEG, PNG, or WebP page images, or paste a chapter URL from opchapters.com. Multiple images are ordered by filename.",
+      "You can upload one CBZ, CBR, ZIP, RAR, or PDF comic, select multiple JPG, JPEG, PNG, or WebP page images, or paste a chapter URL from opchapters.com or tcbonepiecechapters.com. Multiple images are ordered by filename.",
   },
   {
     question: "What happens to uploaded files?",

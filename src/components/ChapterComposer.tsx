@@ -64,7 +64,7 @@ export default function ChapterComposer({
         disabled={disabled}
         value={url}
         onChange={(event) => onUrlChange(event.target.value)}
-        placeholder="Paste an OP Chapters link…"
+        placeholder="Paste an OP Chapters or TCB chapter link…"
         className="block w-full resize-none border-0 bg-transparent px-5 pt-5 text-lg text-gray-950 placeholder:text-gray-400 focus:outline-none focus:ring-0 disabled:cursor-not-allowed disabled:text-gray-500"
       />
       <div className="flex items-end justify-between gap-3 border-t border-gray-200 px-4 py-3">

@@ -12,7 +12,7 @@ arrow-key navigation.
 
 ## Key facts
 
-- OnePanel Reader works with chapter links from https://opchapters.com/.
+- OnePanel Reader works with chapter links from https://opchapters.com/ and https://tcbonepiecechapters.com/.
 - Pricing: Standard mode is free with no account or card required. OnePanel
   Pro is EUR 4.99 per month, adds GPT-5.6 Layout for complex pages, and can be
   cancelled any time. Billing is handled by Stripe.
