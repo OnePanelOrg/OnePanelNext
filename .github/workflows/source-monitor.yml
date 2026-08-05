@@ -1,0 +1,47 @@
+name: Source compatibility monitor
+
+on:
+  schedule:
+    - cron: "17 6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: source-compatibility-monitor
+  cancel-in-progress: false
+
+jobs:
+  monitor:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Check configured chapter sources
+        id: monitor
+        env:
+          MONITOR_API_URL: ${{ secrets.MONITOR_API_URL }}
+          MONITOR_CHAPTER_URLS: ${{ secrets.MONITOR_CHAPTER_URLS }}
+        run: npm run monitor:sources 2>&1 | tee source-monitor.log
+      - name: Notify Telegram on failure
+        if: ${{ failure() && steps.monitor.outcome == 'failure' }}
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          tail -c 2500 source-monitor.log > telegram-error.txt
+          {
+            printf 'OnePanel source monitor failed.\n\n'
+            cat telegram-error.txt
+            printf '\n\n%s/actions/runs/%s' "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY" "$GITHUB_RUN_ID"
+          } > telegram-message.txt
+          curl --fail-with-body --silent --show-error \
+            --request POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+            --data-urlencode "chat_id=${TELEGRAM_CHAT_ID}" \
+            --data-urlencode text@telegram-message.txt
