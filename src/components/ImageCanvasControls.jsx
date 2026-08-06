@@ -1,5 +1,8 @@
 import React from "react";
 
+const arrowButton =
+  "grid h-11 w-11 place-items-center border-2 border-paper bg-transparent text-lg font-bold text-paper transition hover:bg-paper hover:text-ink disabled:cursor-not-allowed disabled:opacity-25 disabled:hover:bg-transparent disabled:hover:text-paper";
+
 const ImageCanvasControls = ({
   currentPageIndex,
   imagesLength,
@@ -11,34 +14,31 @@ const ImageCanvasControls = ({
   isAtEnd,
 }) => {
   return (
-    <div
-      className="rounded-lg bg-neutral-100 p-5 shadow-lg"
-      style={{ position: "absolute", bottom: 20, right: 20 }}
-    >
-      <div className="flex items-center justify-between">
+    <div className="pointer-events-auto fixed bottom-5 left-1/2 z-10 -translate-x-1/2 border-3 border-paper bg-ink px-3 py-2">
+      <div className="flex items-center gap-4">
         <button
-          className="rounded bg-emerald-500 p-5 text-white transition-colors duration-200 hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-gray-400"
+          className={arrowButton}
           onClick={handleLeftArrow}
           disabled={isAtStart}
           aria-label="Previous panel"
         >
-          Left
+          <span aria-hidden="true">←</span>
         </button>
-        <div className="text-center">
-          <span className="block p-5">
-            Page: {currentPageIndex + 1}/{imagesLength}
+        <p className="text-center font-mono text-[11px] uppercase leading-tight tracking-[0.14em] text-paper/70">
+          <span className="block">
+            Page {currentPageIndex + 1}/{imagesLength}
           </span>
-          <span className="block p-5">
-            Panel: {currentPanelIndex + 1}/{panelsInThisPage}
+          <span className="mt-0.5 block text-paper">
+            Panel {currentPanelIndex + 1}/{panelsInThisPage}
           </span>
-        </div>
+        </p>
         <button
-          className="rounded bg-emerald-500 p-5 text-white transition-colors duration-200 hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-gray-400"
+          className={arrowButton}
           onClick={handleRightArrow}
           disabled={isAtEnd}
           aria-label="Next panel"
         >
-          Right
+          <span aria-hidden="true">→</span>
         </button>
       </div>
     </div>

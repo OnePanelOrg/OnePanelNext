@@ -13,6 +13,7 @@ import UploadForm from "../components/UploadForm";
 import UpgradeModal from "../components/UpgradeModal";
 import { SignInButton, useAuth } from "../lib/auth";
 import { trackMarketingEvent } from "../lib/analytics";
+import { ui } from "../lib/theme";
 import {
   createChapter,
   createCheckout,
@@ -243,35 +244,29 @@ const Reader: NextPage = () => {
         <meta name="robots" content="noindex" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <div className="flex min-h-screen flex-col bg-[#f6f4ef] text-gray-950">
+      <div className="flex min-h-screen flex-col bg-paper text-ink">
         <Header />
         <main className="flex flex-grow items-center px-4 py-12">
           <div className="mx-auto w-full max-w-3xl">
-            <section className="text-center">
-              <p className="mb-4 inline-flex rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-sm font-semibold text-emerald-800">
-                Reader home
-              </p>
-              <h1 className="text-4xl font-black leading-tight tracking-normal text-gray-950 sm:text-5xl">
+            <section>
+              <p className={ui.eyebrow}>Reader</p>
+              <h1 className={`mt-4 font-display text-4xl font-extrabold leading-[0.95] tracking-[-0.035em] sm:text-5xl`}>
                 Bring your own chapter.
               </h1>
-              <p className="mx-auto mt-4 max-w-2xl text-lg leading-8 text-gray-700">
+              <p className={`mt-5 max-w-2xl ${ui.lead}`}>
                 Import a comic from your library, your own page scans, or a
                 supported chapter link. OnePanel turns it into a focused,
                 panel-by-panel reader.
               </p>
             </section>
 
-            <section className="mx-auto mt-8 overflow-visible rounded-2xl border border-gray-200 bg-white p-5 shadow-lg sm:p-6">
+            <section className="mt-8 overflow-visible border-3 border-ink bg-white p-5 sm:p-6">
               <div className="mb-5">
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <p className="text-xs font-black uppercase tracking-[0.16em] text-emerald-700">
-                    Upload a chapter
-                  </p>
-                  <p className="text-xs font-bold text-gray-500">
-                    Account required
-                  </p>
+                  <p className={ui.eyebrow}>Upload a chapter</p>
+                  <p className={ui.micro}>Account required</p>
                 </div>
-                <p className="mt-1 text-sm text-gray-600">
+                <p className={`mt-2 ${ui.prose}`}>
                   Bring the source you already have. OnePanel handles the rest.
                 </p>
               </div>
@@ -286,23 +281,23 @@ const Reader: NextPage = () => {
                   />
                 </div>
                 <div className="flex items-center gap-3" aria-hidden="true">
-                  <span className="h-px flex-1 bg-gray-200" />
-                  <span className="text-xs font-bold uppercase tracking-[0.14em] text-gray-400">
+                  <span className="h-0.5 flex-1 bg-ink/15" />
+                  <span className="font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-ink/45">
                     or paste a link
                   </span>
-                  <span className="h-px flex-1 bg-gray-200" />
+                  <span className="h-0.5 flex-1 bg-ink/15" />
                 </div>
                 <div className="flex flex-wrap items-baseline justify-between gap-2">
-                  <p className="text-sm font-bold text-gray-950">
+                  <p className="font-display text-base font-extrabold tracking-tight text-ink">
                     Paste a supported chapter link
                   </p>
-                  <p className="flex flex-wrap gap-x-3 gap-y-1 text-sm text-gray-600">
+                  <p className="flex flex-wrap gap-x-3 gap-y-1 font-mono text-[11px] uppercase tracking-[0.12em] text-ink/55">
                     <span>No account needed</span>
                     <a
                       href="https://opchapters.com/"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="font-semibold text-emerald-700 underline decoration-emerald-300 underline-offset-4 hover:text-emerald-900"
+                      className="font-semibold text-ink underline underline-offset-4 hover:bg-marker"
                     >
                       OP Chapters
                     </a>
@@ -310,13 +305,13 @@ const Reader: NextPage = () => {
                       href="https://tcbonepiecechapters.com/"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="font-semibold text-emerald-700 underline decoration-emerald-300 underline-offset-4 hover:text-emerald-900"
+                      className="font-semibold text-ink underline underline-offset-4 hover:bg-marker"
                     >
                       TCB One Piece Chapters
                     </a>
                   </p>
                 </div>
-                <div className="overflow-visible rounded-xl border border-gray-200 bg-[#faf9f6]">
+                <div className="overflow-visible border-3 border-ink bg-white">
                   <ChapterComposer
                     disabled={isLoading}
                     mode={mode}
@@ -335,17 +330,17 @@ const Reader: NextPage = () => {
               </div>
               <aside
                 aria-label="How uploaded files are handled"
-                className="mt-5 rounded-xl bg-emerald-50 px-4 py-3 text-sm text-emerald-950"
+                className="mt-5 border-l-3 border-ink bg-newsprint px-4 py-3 text-sm text-ink"
               >
-                <p className="font-bold">Private by design</p>
-                <p className="mt-1 leading-6 text-emerald-900/80">
+                <p className="font-display font-extrabold tracking-tight">Private by design</p>
+                <p className="mt-1 leading-6 text-ink/70">
                   File uploads are deleted after analysis. Only panel layout
                   JSON remains, and you will need the original files again after
                   this browser session.
                 </p>
               </aside>
               {isLoading && uploadProgress === null && (
-                <p className="pt-4 text-center text-sm font-semibold text-gray-600">
+                <p className={`pt-4 text-center ${ui.micro}`}>
                   Preparing your panel-by-panel reader.
                 </p>
               )}
@@ -356,11 +351,11 @@ const Reader: NextPage = () => {
               )}
             </section>
 
-            <ul className="mt-6 grid gap-3 text-sm font-semibold text-gray-800 sm:grid-cols-3">
+            <ul className="mt-6 grid gap-px border-3 border-ink bg-ink sm:grid-cols-3">
               {readerBenefits.map((benefit) => (
                 <li
                   key={benefit}
-                  className="rounded-md border border-gray-200 bg-white px-4 py-3 text-center"
+                  className="bg-paper px-4 py-4 text-center font-mono text-[11px] uppercase leading-relaxed tracking-[0.1em] text-ink"
                 >
                   {benefit}
                 </li>

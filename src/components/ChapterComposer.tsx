@@ -65,9 +65,9 @@ export default function ChapterComposer({
         value={url}
         onChange={(event) => onUrlChange(event.target.value)}
         placeholder="Paste an OP Chapters or TCB chapter link…"
-        className="block w-full resize-none border-0 bg-transparent px-5 pt-5 text-lg text-gray-950 placeholder:text-gray-400 focus:outline-none focus:ring-0 disabled:cursor-not-allowed disabled:text-gray-500"
+        className="block w-full resize-none border-0 bg-transparent px-5 pt-5 text-lg text-ink placeholder:text-ink/35 focus:outline-none focus:ring-0 disabled:cursor-not-allowed disabled:text-ink/40"
       />
-      <div className="flex items-end justify-between gap-3 border-t border-gray-200 px-4 py-3">
+      <div className="flex items-end justify-between gap-3 border-t-3 border-ink px-4 py-3">
         <div ref={menu} className="relative">
           <button
             type="button"
@@ -76,11 +76,11 @@ export default function ChapterComposer({
             aria-controls="chapter-mode-menu"
             disabled={disabled}
             onClick={() => setMenuOpen((open) => !open)}
-            className="rounded-lg px-3 py-2 text-left text-sm font-bold text-gray-900 hover:bg-gray-100 disabled:cursor-not-allowed"
+            className="px-3 py-2 text-left font-mono text-xs font-semibold uppercase tracking-[0.12em] text-ink hover:bg-newsprint disabled:cursor-not-allowed"
           >
             {selected.showsCrown && <span aria-hidden="true">♛ </span>}
             {selected.label}
-            <span aria-hidden="true" className="ml-2 text-gray-500">
+            <span aria-hidden="true" className="ml-2 text-ink/50">
               ⌄
             </span>
           </button>
@@ -89,7 +89,7 @@ export default function ChapterComposer({
               id="chapter-mode-menu"
               role="listbox"
               aria-label="Panel detection mode"
-              className="absolute bottom-full left-0 z-10 mb-2 w-72 overflow-hidden rounded-xl border border-gray-200 bg-white p-1 shadow-xl"
+              className="absolute bottom-full left-0 z-10 mb-2 w-72 overflow-hidden border-3 border-ink bg-white"
             >
               {modes.map((item) => (
                 <button
@@ -101,18 +101,18 @@ export default function ChapterComposer({
                     onModeChange(item.id);
                     setMenuOpen(false);
                   }}
-                  className="block w-full rounded-lg px-3 py-3 text-left hover:bg-gray-100"
+                  className="block w-full border-b-2 border-ink/10 px-3 py-3 text-left last:border-b-0 hover:bg-marker"
                 >
-                  <span className="flex items-center justify-between gap-3 font-bold">
+                  <span className="flex items-center justify-between gap-3 font-display font-extrabold tracking-tight">
                     <span>
                       {item.showsCrown && <span aria-hidden="true">♛ </span>}
                       {item.label}
                     </span>
-                    <span className="text-xs uppercase tracking-wide text-gray-500">
+                    <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-ink/50">
                       {item.tier === "pro" ? "Pro" : "Free"}
                     </span>
                   </span>
-                  <span className="mt-1 block text-sm font-normal text-gray-600">
+                  <span className="mt-1 block text-sm font-normal text-ink/65">
                     {item.description}
                   </span>
                 </button>
@@ -124,7 +124,7 @@ export default function ChapterComposer({
           type="submit"
           disabled={disabled}
           aria-label={disabled ? "Processing chapter" : "Process chapter"}
-          className="grid h-11 w-11 place-items-center rounded-full bg-gray-950 text-xl font-bold text-white hover:bg-gray-800 disabled:cursor-not-allowed disabled:bg-gray-400"
+          className="grid h-11 w-11 place-items-center bg-ink text-xl font-bold text-white transition hover:bg-ink-soft disabled:cursor-not-allowed disabled:bg-ink/40"
         >
           <span aria-hidden="true">{disabled ? "…" : "↑"}</span>
         </button>

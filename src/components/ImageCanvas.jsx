@@ -147,7 +147,7 @@ const ImageCanvas = ({ data, chapterHash }) => {
   const currentImageState = imageStates[currentPageIndex];
 
   return (
-    <div className="relative min-h-screen w-full overflow-auto bg-gray-950">
+    <div className="relative min-h-screen w-full overflow-auto bg-ink">
       {currentImageState?.status === "loading" && (
         <div className="flex min-h-screen items-center justify-center text-white">
           Loading page image…
