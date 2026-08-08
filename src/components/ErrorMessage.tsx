@@ -1,3 +1,5 @@
+import { ui } from "../lib/theme";
+
 type ErrorMessageProps = {
   message: string;
   onRetry?: () => void;
@@ -5,17 +7,13 @@ type ErrorMessageProps = {
 
 export default function ErrorMessage({ message, onRetry }: ErrorMessageProps) {
   return (
-    <div
-      role="alert"
-      className="rounded-lg bg-white p-6 text-center text-gray-900 shadow-lg"
-    >
-      <p>{message}</p>
+    <div role="alert" className="border-3 border-ink bg-marker p-5 text-ink">
+      <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.18em] text-ink/60">
+        Something stopped
+      </p>
+      <p className="mt-2 font-medium leading-relaxed">{message}</p>
       {onRetry && (
-        <button
-          type="button"
-          onClick={onRetry}
-          className="mt-4 rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
-        >
+        <button type="button" onClick={onRetry} className={`mt-4 ${ui.button}`}>
           Try again
         </button>
       )}

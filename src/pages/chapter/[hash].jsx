@@ -68,20 +68,22 @@ export default function Page() {
         <meta name="robots" content="noindex" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <main className="flex min-h-screen items-center justify-center bg-gradient-to-b from-[#64de9f] to-[#13aeae]">
+      <main className="flex min-h-screen items-center justify-center bg-ink px-4">
         {isLoading && <LoadingComponent />}
         {error && (
           <div className="space-y-4 text-center">
-            <ErrorMessage
-              message={error}
-              onRetry={requiresReupload ? undefined : loadChapter}
-            />
+            <div className="mx-auto max-w-md text-left">
+              <ErrorMessage
+                message={error}
+                onRetry={requiresReupload ? undefined : loadChapter}
+              />
+            </div>
             {requiresSignIn && chapterHash && (
               <SignInButton
                 fallbackRedirectUrl={`/chapter/${encodeURIComponent(chapterHash)}`}
                 signUpFallbackRedirectUrl={`/chapter/${encodeURIComponent(chapterHash)}`}
               >
-                <button className="rounded-md bg-blue-600 px-4 py-2 font-semibold text-white">
+                <button className="border-3 border-paper px-5 py-3 font-display text-base font-extrabold text-paper transition hover:bg-paper hover:text-ink">
                   Sign in to read
                 </button>
               </SignInButton>
@@ -90,7 +92,7 @@ export default function Page() {
               <button
                 type="button"
                 onClick={() => void router.push("/reader")}
-                className="rounded-md bg-blue-600 px-4 py-2 font-semibold text-white"
+                className="border-3 border-paper px-5 py-3 font-display text-base font-extrabold text-paper transition hover:bg-paper hover:text-ink"
               >
                 Re-upload chapter
               </button>

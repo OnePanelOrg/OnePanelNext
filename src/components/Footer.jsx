@@ -1,38 +1,40 @@
 import Link from "next/link";
+import { ui } from "../lib/theme";
+
+const footerLink = "hover:text-ink hover:underline";
 
 const Footer = () => {
   return (
-    <footer className="mt-auto border-t border-gray-200 bg-white">
-      <div className="container mx-auto flex flex-col gap-3 px-4 py-5 text-sm text-gray-600 sm:flex-row sm:items-center sm:justify-between">
-        <p>&copy; {new Date().getFullYear()} OnePanel Reader.</p>
-        <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
-          <Link
-            href="/spoiler-free-manga-reader"
-            className="font-semibold text-gray-800 underline underline-offset-4 hover:text-gray-950"
-          >
+    <footer className="mt-auto border-t-3 border-ink bg-paper">
+      <div
+        className={`${ui.container} flex flex-col gap-4 py-8 font-mono text-[11px] uppercase tracking-[0.14em] text-ink/60 sm:flex-row sm:items-center sm:justify-between`}
+      >
+        <p>&copy; {new Date().getFullYear()} OnePanel Reader</p>
+        <div className="flex flex-wrap gap-x-6 gap-y-2">
+          <Link href="/spoiler-free-manga-reader" className={footerLink}>
             How it works
           </Link>
-          <Link
-            href="/faq"
-            className="font-semibold text-gray-800 underline underline-offset-4 hover:text-gray-950"
-          >
+          <Link href="/faq" className={footerLink}>
             FAQ
+          </Link>
+          <Link href="/reader" className={footerLink}>
+            Upload a file
           </Link>
           <a
             href="https://opchapters.com/"
             target="_blank"
             rel="noopener noreferrer"
-            className="font-semibold text-gray-800 underline underline-offset-4 hover:text-gray-950"
+            className={footerLink}
           >
-            Find OP Chapters
+            OP Chapters
           </a>
           <a
             href="https://tcbonepiecechapters.com/"
             target="_blank"
             rel="noopener noreferrer"
-            className="font-semibold text-gray-800 underline underline-offset-4 hover:text-gray-950"
+            className={footerLink}
           >
-            Find TCB Chapters
+            TCB Chapters
           </a>
         </div>
       </div>

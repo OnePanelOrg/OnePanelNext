@@ -3,6 +3,7 @@ import Head from "next/head";
 import Link from "next/link";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
+import { ui } from "../lib/theme";
 
 const faqs = [
   {
@@ -78,20 +79,21 @@ const Faq: NextPage = () => (
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
       />
     </Head>
-    <div className="flex min-h-screen flex-col bg-[#f6f4ef] text-gray-950">
+    <div className="flex min-h-screen flex-col bg-paper text-ink">
       <Header />
       <main className="flex-grow">
-        <section className="border-b border-gray-200 bg-white">
-          <div className="container mx-auto max-w-3xl px-4 py-12">
-            <h1 className="text-4xl font-black leading-tight tracking-normal text-gray-950 sm:text-5xl">
+        <section className={ui.rule}>
+          <div className={`${ui.containerNarrow} py-14`}>
+            <p className={ui.eyebrow}>Questions</p>
+            <h1 className="mt-4 font-display text-4xl font-extrabold leading-[0.95] tracking-[-0.035em] sm:text-5xl">
               Frequently asked questions
             </h1>
-            <p className="mt-5 text-lg leading-8 text-gray-700">
+            <p className={`mt-5 ${ui.lead}`}>
               Everything you need to know about bringing a chapter to OnePanel
               Reader. Still stuck? See the{" "}
               <Link
                 href="/spoiler-free-manga-reader"
-                className="font-semibold text-gray-950 underline underline-offset-4 hover:text-gray-700"
+                className="font-semibold text-ink underline underline-offset-4 hover:bg-marker"
               >
                 spoiler-free reading guide
               </Link>
@@ -100,28 +102,28 @@ const Faq: NextPage = () => (
           </div>
         </section>
         <section>
-          <div className="container mx-auto max-w-3xl px-4 py-12">
-            <dl className="space-y-8">
+          <div className={`${ui.containerNarrow} py-14`}>
+            <dl className="divide-y-3 divide-ink border-y-3 border-ink">
               {faqs.map((faq) => (
-                <div key={faq.question}>
-                  <dt className="text-lg font-bold text-gray-950">
+                <div key={faq.question} className="py-6">
+                  <dt className="font-display text-lg font-extrabold tracking-[-0.02em] text-ink">
                     {faq.question}
                   </dt>
-                  <dd className="mt-2 text-gray-700">{faq.answer}</dd>
+                  <dd className={`mt-2 ${ui.prose}`}>{faq.answer}</dd>
                 </div>
               ))}
             </dl>
-            <div className="mt-12 rounded-xl bg-white p-8 text-center shadow-sm ring-1 ring-gray-200">
-              <h2 className="text-2xl font-black text-gray-950">
+            <div className="mt-12 bg-ink p-8 text-center text-paper">
+              <h2 className="font-display text-2xl font-extrabold tracking-[-0.03em]">
                 Have a chapter ready?
               </h2>
-              <p className="mt-2 text-gray-700">
+              <p className="mt-2 text-[0.95rem] leading-relaxed text-paper/70">
                 Upload your comic or paste a supported link and read one panel
                 at a time.
               </p>
               <Link
                 href="/reader"
-                className="mt-5 inline-block rounded-md bg-gray-950 px-5 py-3 text-base font-bold text-white hover:bg-gray-800"
+                className="mt-6 inline-flex items-center justify-center bg-paper px-5 py-3 font-display text-base font-extrabold tracking-tight text-ink transition hover:bg-marker"
               >
                 Start reading free
               </Link>

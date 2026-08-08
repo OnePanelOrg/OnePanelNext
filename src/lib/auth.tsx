@@ -204,7 +204,7 @@ function ClerkUserName() {
   if (!name) return null;
 
   return (
-    <span className="hidden max-w-[12rem] truncate text-sm font-semibold text-gray-700 sm:inline">
+    <span className="hidden max-w-[12rem] truncate font-mono text-[11px] uppercase tracking-[0.12em] text-ink/60 sm:inline">
       {name}
     </span>
   );

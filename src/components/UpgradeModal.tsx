@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { SignInButton, SignUpButton } from "../lib/auth";
+import { ui } from "../lib/theme";
 
 type Props = {
   isSignedIn: boolean;
@@ -30,7 +31,7 @@ export default function UpgradeModal({
   return (
     <div
       role="presentation"
-      className="fixed inset-0 z-50 grid place-items-center bg-gray-950/55 p-4"
+      className="fixed inset-0 z-50 grid place-items-center bg-ink/70 p-4"
       onMouseDown={(event) => {
         if (event.target === event.currentTarget && !isLoading) onClose();
       }}
@@ -39,62 +40,73 @@ export default function UpgradeModal({
         role="dialog"
         aria-modal="true"
         aria-labelledby="upgrade-title"
-        className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl"
+        className="w-full max-w-md border-3 border-ink bg-paper"
       >
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <p className="text-sm font-bold text-emerald-700">OnePanel Pro</p>
-            <h2 id="upgrade-title" className="mt-1 text-2xl font-black">
-              Unlock GPT-5.6 Layout
-            </h2>
-          </div>
+        <div className="flex items-start justify-between gap-4 bg-ink px-5 py-3">
+          <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.18em] text-white/70">
+            OnePanel Pro
+          </p>
           <button
             ref={closeButton}
             type="button"
             aria-label="Close upgrade dialog"
             disabled={isLoading}
             onClick={onClose}
-            className="rounded-md p-2 text-gray-600 hover:bg-gray-100"
+            className="font-mono text-sm font-semibold text-white/70 transition hover:text-white"
           >
-            ×
+            Close
           </button>
         </div>
-        <p className="mt-3 text-gray-700">
-          Get better panel detection for complex page layouts for €4.99 / month.
-          Cancel any time.
-        </p>
-        <div className="mt-6 grid gap-3">
-          {isSignedIn ? (
+        <div className="p-6">
+          <h2 id="upgrade-title" className={ui.h3}>
+            This page is drawn to break the grid
+          </h2>
+          <p className={`mt-3 ${ui.prose}`}>
+            Splash spreads, diagonal cuts, and panels inside panels are where
+            Standard has to guess. Pro reads them the way they were drawn, for
+            €4.99 per month. Cancel any time.
+          </p>
+          <div className="mt-6 grid gap-3">
+            {isSignedIn ? (
+              <button
+                type="button"
+                disabled={isLoading}
+                onClick={onContinue}
+                className={ui.button}
+              >
+                {isLoading ? "Opening checkout…" : "Continue to checkout"}
+              </button>
+            ) : (
+              <>
+                <SignUpButton forceRedirectUrl="/reader">
+                  <button
+                    type="button"
+                    onClick={onAuthenticate}
+                    className={ui.button}
+                  >
+                    Create account and continue
+                  </button>
+                </SignUpButton>
+                <SignInButton forceRedirectUrl="/reader">
+                  <button
+                    type="button"
+                    onClick={onAuthenticate}
+                    className={ui.buttonGhost}
+                  >
+                    Sign in and continue
+                  </button>
+                </SignInButton>
+              </>
+            )}
             <button
               type="button"
               disabled={isLoading}
-              onClick={onContinue}
-              className="rounded-lg bg-gray-950 px-4 py-3 font-bold text-white disabled:bg-gray-400"
+              onClick={onClose}
+              className={`${ui.micro} py-1 underline hover:text-ink`}
             >
-              {isLoading ? "Opening Checkout…" : "Continue to Checkout"}
+              Keep reading with Standard
             </button>
-          ) : (
-            <>
-              <SignUpButton forceRedirectUrl="/reader">
-                <button
-                  type="button"
-                  onClick={onAuthenticate}
-                  className="rounded-lg bg-gray-950 px-4 py-3 font-bold text-white"
-                >
-                  Create account and continue
-                </button>
-              </SignUpButton>
-              <SignInButton forceRedirectUrl="/reader">
-                <button
-                  type="button"
-                  onClick={onAuthenticate}
-                  className="rounded-lg border border-gray-300 px-4 py-3 font-bold text-gray-900"
-                >
-                  Sign in and continue
-                </button>
-              </SignInButton>
-            </>
-          )}
+          </div>
         </div>
       </section>
     </div>

@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from "react";
+import { ui } from "../lib/theme";
 import { createSourceRequestMailto } from "../lib/source-request.mjs";
 
 export default function SourceRequestForm() {
@@ -23,32 +24,27 @@ export default function SourceRequestForm() {
   return (
     <section
       aria-labelledby="source-request-title"
-      className="mx-auto mt-6 rounded-2xl border border-dashed border-gray-300 bg-white/60 p-5 sm:p-6"
+      className="mt-6 border-3 border-dashed border-ink/40 p-5 sm:p-6"
     >
       <div className="grid gap-5 sm:grid-cols-[minmax(0,1fr)_minmax(18rem,1.15fr)] sm:items-end">
         <div>
-          <p className="text-xs font-black uppercase tracking-[0.16em] text-emerald-700">
-            Request a source
-          </p>
-          <h2
-            id="source-request-title"
-            className="mt-1 text-xl font-black text-gray-950"
-          >
-            Want another website supported?
+          <p className={ui.eyebrow}>Request a source</p>
+          <h2 id="source-request-title" className={`mt-2 ${ui.h3}`}>
+            Want another site supported?
           </h2>
-          <p className="mt-2 text-sm leading-6 text-gray-600">
-            Share a link from the site. We use requests to decide which chapter
-            sources to add next.
+          <p className={`mt-2 ${ui.prose}`}>
+            Share a link from the site. Requests decide which chapter sources
+            get added next.
           </p>
         </div>
         <form onSubmit={handleSubmit} noValidate>
           <label
             htmlFor="requested-source-url"
-            className="text-sm font-bold text-gray-900"
+            className={`block ${ui.eyebrow}`}
           >
             Website or chapter URL
           </label>
-          <div className="mt-2 flex flex-col gap-2 sm:flex-row">
+          <div className={`mt-2 flex flex-col ${ui.field} sm:flex-row`}>
             <input
               id="requested-source-url"
               type="url"
@@ -65,11 +61,11 @@ export default function SourceRequestForm() {
               placeholder="https://example.com/chapter/…"
               aria-describedby="source-request-message"
               aria-invalid={Boolean(error)}
-              className="min-w-0 flex-1 rounded-lg border-gray-300 bg-white text-gray-950 placeholder:text-gray-400 focus:border-emerald-600 focus:ring-emerald-600"
+              className={`${ui.input} py-2.5 text-[0.95rem]`}
             />
             <button
               type="submit"
-              className="rounded-lg bg-gray-950 px-5 py-2.5 text-sm font-bold text-white hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:ring-offset-2"
+              className="shrink-0 bg-ink px-5 py-2.5 font-display text-[0.95rem] font-extrabold text-white transition hover:bg-ink-soft"
             >
               Let us know
             </button>
@@ -77,8 +73,8 @@ export default function SourceRequestForm() {
           <p
             id="source-request-message"
             role={error ? "alert" : "status"}
-            className={`mt-2 min-h-5 text-sm font-medium ${
-              error ? "text-red-700" : "text-emerald-800"
+            className={`mt-2 min-h-5 font-mono text-[11px] uppercase tracking-[0.12em] ${
+              error ? "text-ink" : "text-ink/55"
             }`}
           >
             {error ?? status}
