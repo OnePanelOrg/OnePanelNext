@@ -12,8 +12,8 @@ import { ui } from "../lib/theme";
 
 const copy = {
   eyebrow: "Spoiler-safe manga reader",
-  headlineStart: "You read",
-  headlineRedacted: "the last panel",
+  headlineStart: "Your eye finds",
+  headlineRedacted: "the ending",
   headlineEnd: "first.",
   sub: "A manga page puts six panels in front of you at once. Your eye goes to the biggest one, and the biggest one is usually the reveal. OnePanel gives the chapter back its timing: one panel per screen, in the order it was drawn.",
 };
