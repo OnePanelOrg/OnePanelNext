@@ -47,17 +47,32 @@ export async function sendChapterNotification(event, options = {}) {
         signal: controller.signal,
       },
     );
-    if (response.ok) return true;
-
-    let description = "Telegram API returned an error.";
+    let body;
     try {
-      const body = await response.json();
-      if (typeof body?.description === "string") {
-        description = body.description.slice(0, 500);
-      }
+      body = await response.json();
     } catch {
-      // Keep the generic description for non-JSON Telegram responses.
+      // Telegram normally returns JSON, but delivery still follows HTTP status.
     }
+    if (response.ok) {
+      logger.info?.("Telegram chapter notification delivered.", {
+        status: response.status,
+        messageId:
+          typeof body?.result?.message_id === "number"
+            ? body.result.message_id
+            : null,
+        chatType:
+          typeof body?.result?.chat?.type === "string"
+            ? body.result.chat.type
+            : "unknown",
+        chatIdSuffix: String(chatId).slice(-4),
+      });
+      return true;
+    }
+
+    const description =
+      typeof body?.description === "string"
+        ? body.description.slice(0, 500)
+        : "Telegram API returned an error.";
     logger.error("Telegram chapter notification failed.", {
       status: response.status,
       description,

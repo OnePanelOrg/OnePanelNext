@@ -63,3 +63,42 @@ test("logs Telegram API rejections without exposing credentials", async () => {
   ]);
   assert.doesNotMatch(JSON.stringify(errors), /secret-bot-token|secret-chat-id/);
 });
+
+test("logs a sanitized receipt for successful Telegram deliveries", async () => {
+  const messages = [];
+  const sent = await sendChapterNotification(
+    {
+      kind: "upload",
+      mode: "standard",
+      fileCount: 3,
+    },
+    {
+      token: "secret-bot-token",
+      chatId: "-1001234567890",
+      fetch: async () =>
+        new Response(
+          JSON.stringify({
+            ok: true,
+            result: {
+              message_id: 42,
+              chat: { id: -1001234567890, type: "supergroup" },
+            },
+          }),
+          {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+          },
+        ),
+      logger: { info: (...args) => messages.push(args), error: () => {} },
+    },
+  );
+
+  assert.equal(sent, true);
+  assert.deepEqual(messages, [
+    [
+      "Telegram chapter notification delivered.",
+      { status: 200, messageId: 42, chatType: "supergroup", chatIdSuffix: "7890" },
+    ],
+  ]);
+  assert.doesNotMatch(JSON.stringify(messages), /secret-bot-token|1001234567890/);
+});
