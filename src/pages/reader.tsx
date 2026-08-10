@@ -9,7 +9,6 @@ import ErrorMessage from "../components/ErrorMessage";
 import Footer from "../components/Footer";
 import Header from "../components/Header";
 import SourceRequestForm from "../components/SourceRequestForm";
-import UploadForm from "../components/UploadForm";
 import UpgradeModal from "../components/UpgradeModal";
 import { SignInButton, useAuth } from "../lib/auth";
 import { trackMarketingEvent } from "../lib/analytics";
@@ -248,97 +247,64 @@ const Reader: NextPage = () => {
         <Header />
         <main className="flex flex-grow items-center px-4 py-12">
           <div className="mx-auto w-full max-w-3xl">
-            <section>
+            <section className="text-center">
               <p className={ui.eyebrow}>Reader</p>
-              <h1 className={`mt-4 font-display text-4xl font-extrabold leading-[0.95] tracking-[-0.035em] sm:text-5xl`}>
-                Bring your own chapter.
+              <h1 className="mt-4 font-display text-4xl font-extrabold leading-[0.95] tracking-[-0.035em] sm:text-5xl">
+                Upload a chapter.
               </h1>
-              <p className={`mt-5 max-w-2xl ${ui.lead}`}>
-                Import a comic from your library, your own page scans, or a
-                supported chapter link. OnePanel turns it into a focused,
-                panel-by-panel reader.
+              <p className={`mx-auto mt-4 max-w-2xl ${ui.lead}`}>
+                Bring the source you already have. OnePanel handles the rest.
               </p>
             </section>
 
-            <section className="mt-8 overflow-visible border-3 border-ink bg-white p-5 sm:p-6">
-              <div className="mb-5">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <p className={ui.eyebrow}>Upload a chapter</p>
-                  <p className={ui.micro}>Account required</p>
-                </div>
-                <p className={`mt-2 ${ui.prose}`}>
-                  Bring the source you already have. OnePanel handles the rest.
+            <section className="mt-8 overflow-visible">
+              <ChapterComposer
+                disabled={isLoading}
+                mode={mode}
+                onModeChange={(nextMode) => {
+                  setMode(nextMode);
+                  trackMarketingEvent("mode_selected", {
+                    mode: nextMode,
+                    source: "reader_page",
+                  });
+                }}
+                onUrlSubmit={(chapterUrl) => void postUrl(chapterUrl)}
+                onFilesSubmit={(files) => void postFiles(files)}
+                url={url}
+                onUrlChange={setUrl}
+                requiresAuth={!isSignedIn}
+                onAuthRequired={() => signInTriggerRef.current?.click()}
+                progress={uploadProgress}
+              />
+
+              <div className="mt-4 space-y-2 text-center font-mono text-[10px] uppercase leading-relaxed tracking-[0.1em] text-ink/55 sm:text-[11px]">
+                <p>
+                  CBZ, CBR, ZIP, RAR, PDF, images
+                  <span aria-hidden="true"> · </span>
+                  <a
+                    href="https://opchapters.com/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-semibold text-ink underline underline-offset-4 hover:bg-marker"
+                  >
+                    OP Chapters
+                  </a>
+                  <span aria-hidden="true"> · </span>
+                  <a
+                    href="https://tcbonepiecechapters.com/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-semibold text-ink underline underline-offset-4 hover:bg-marker"
+                  >
+                    TCB
+                  </a>
+                </p>
+                <p>Files require an account · Links don’t</p>
+                <p className="normal-case tracking-normal text-ink/60">
+                  <span aria-hidden="true">▣ </span>
+                  Uploads are deleted after analysis.
                 </p>
               </div>
-              <div className="space-y-5">
-                <div>
-                  <UploadForm
-                    childToParent={postFiles}
-                    disabled={isLoading}
-                    requiresAuth={!isSignedIn}
-                    onAuthRequired={() => signInTriggerRef.current?.click()}
-                    progress={uploadProgress}
-                  />
-                </div>
-                <div className="flex items-center gap-3" aria-hidden="true">
-                  <span className="h-0.5 flex-1 bg-ink/15" />
-                  <span className="font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-ink/45">
-                    or paste a link
-                  </span>
-                  <span className="h-0.5 flex-1 bg-ink/15" />
-                </div>
-                <div className="flex flex-wrap items-baseline justify-between gap-2">
-                  <p className="font-display text-base font-extrabold tracking-tight text-ink">
-                    Paste a supported chapter link
-                  </p>
-                  <p className="flex flex-wrap gap-x-3 gap-y-1 font-mono text-[11px] uppercase tracking-[0.12em] text-ink/55">
-                    <span>No account needed</span>
-                    <a
-                      href="https://opchapters.com/"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="font-semibold text-ink underline underline-offset-4 hover:bg-marker"
-                    >
-                      OP Chapters
-                    </a>
-                    <a
-                      href="https://tcbonepiecechapters.com/"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="font-semibold text-ink underline underline-offset-4 hover:bg-marker"
-                    >
-                      TCB One Piece Chapters
-                    </a>
-                  </p>
-                </div>
-                <div className="overflow-visible border-3 border-ink bg-white">
-                  <ChapterComposer
-                    disabled={isLoading}
-                    mode={mode}
-                    onModeChange={(nextMode) => {
-                      setMode(nextMode);
-                      trackMarketingEvent("mode_selected", {
-                        mode: nextMode,
-                        source: "reader_page",
-                      });
-                    }}
-                    onSubmit={(chapterUrl) => void postUrl(chapterUrl)}
-                    url={url}
-                    onUrlChange={setUrl}
-                  />
-                </div>
-              </div>
-              <aside
-                aria-label="How uploaded files are handled"
-                className="mt-5 border-l-3 border-ink bg-newsprint px-4 py-3 text-sm text-ink"
-              >
-                <p className="font-display font-extrabold tracking-tight">Private by design</p>
-                <p className="mt-1 leading-6 text-ink/70">
-                  File uploads are deleted after analysis. Only panel layout
-                  JSON remains, and you will need the original files again after
-                  this browser session.
-                </p>
-              </aside>
               {isLoading && uploadProgress === null && (
                 <p className={`pt-4 text-center ${ui.micro}`}>
                   Preparing your panel-by-panel reader.
