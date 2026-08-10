@@ -7,6 +7,8 @@ import { z } from "zod";
  */
 export const serverSchema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]),
+  TELEGRAM_BOT_TOKEN: z.string().min(1).optional(),
+  TELEGRAM_CHAT_ID: z.string().min(1).optional(),
 });
 
 /**

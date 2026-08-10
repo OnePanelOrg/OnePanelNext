@@ -18,6 +18,7 @@ import {
   createCheckout,
   createUploadedChapter,
   getSubscription,
+  notifyChapterUpload,
   type Subscription,
 } from "../lib/api";
 import { normalizeChapterUrl } from "../lib/chapter-url.mjs";
@@ -215,6 +216,7 @@ const Reader: NextPage = () => {
         mode: "standard",
         source: "reader_page",
       });
+      await notifyChapterUpload(files.length, "standard", token);
       await router.push(`/chapter/${chapterHash}`);
     } catch (error) {
       if (controller.signal.aborted) return;
