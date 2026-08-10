@@ -20,13 +20,21 @@ export function formatChapterNotification(event) {
 export async function sendChapterNotification(event, options = {}) {
   const token = options.token ?? process.env.TELEGRAM_BOT_TOKEN;
   const chatId = options.chatId ?? process.env.TELEGRAM_CHAT_ID;
-  if (!token || !chatId) return false;
+  const logger = options.logger ?? console;
+  const fetchRequest = options.fetch ?? fetch;
+  if (!token || !chatId) {
+    logger.error("Telegram chapter notification is not configured.", {
+      missingToken: !token,
+      missingChatId: !chatId,
+    });
+    return false;
+  }
 
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), TELEGRAM_TIMEOUT_MS);
 
   try {
-    const response = await fetch(
+    const response = await fetchRequest(
       `${TELEGRAM_API_ORIGIN}/bot${token}/sendMessage`,
       {
         method: "POST",
@@ -39,8 +47,29 @@ export async function sendChapterNotification(event, options = {}) {
         signal: controller.signal,
       },
     );
-    return response.ok;
-  } catch {
+    if (response.ok) return true;
+
+    let description = "Telegram API returned an error.";
+    try {
+      const body = await response.json();
+      if (typeof body?.description === "string") {
+        description = body.description.slice(0, 500);
+      }
+    } catch {
+      // Keep the generic description for non-JSON Telegram responses.
+    }
+    logger.error("Telegram chapter notification failed.", {
+      status: response.status,
+      description,
+    });
+    return false;
+  } catch (error) {
+    logger.error("Telegram chapter notification request failed.", {
+      reason:
+        error instanceof Error && error.name === "AbortError"
+          ? "timeout"
+          : "network_error",
+    });
     return false;
   } finally {
     clearTimeout(timeout);
