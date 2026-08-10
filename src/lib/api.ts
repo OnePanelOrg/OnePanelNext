@@ -277,6 +277,25 @@ export function createUploadedChapter(
   });
 }
 
+export async function notifyChapterUpload(
+  fileCount: number,
+  mode: SegmentationMode,
+  token: string,
+): Promise<void> {
+  try {
+    await fetch("/api/chapter-upload-notification", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ fileCount, mode }),
+    });
+  } catch {
+    // Notifications are operational telemetry and must not break the reader.
+  }
+}
+
 export async function getChapter(
   hash: string,
   token?: string | null,

@@ -160,6 +160,12 @@ Configure these GitHub Actions repository secrets:
 - `TELEGRAM_BOT_TOKEN`: token created with Telegram's BotFather
 - `TELEGRAM_CHAT_ID`: the destination user, group, or channel chat ID
 
+The deployed frontend also sends a Telegram message after each successful
+chapter URL submission or authenticated upload. Configure `TELEGRAM_BOT_TOKEN`
+and `TELEGRAM_CHAT_ID` in the frontend hosting environment as server-only
+variables. GitHub Actions secrets are isolated from the deployed application,
+so the same values must be added there separately.
+
 Add only chapters you are allowed to fetch, prefer small stable fixtures, and
 avoid URLs containing credentials because GitHub Actions logs show source host
 names. Run the same check locally with `npm run monitor:sources` after exporting
