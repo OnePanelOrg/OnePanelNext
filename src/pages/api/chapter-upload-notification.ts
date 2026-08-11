@@ -1,4 +1,5 @@
 import { verifyToken } from "@clerk/nextjs/server";
+import { waitUntil } from "@vercel/functions";
 import { type NextApiRequest, type NextApiResponse } from "next";
 import { z } from "zod";
 import { sendChapterNotification } from "../../lib/telegram-notification.mjs";
@@ -39,10 +40,12 @@ export default async function handler(
     return;
   }
 
+  waitUntil(
+    sendChapterNotification({
+      kind: "upload",
+      mode: body.data.mode,
+      fileCount: body.data.fileCount,
+    }),
+  );
   res.status(204).end();
-  await sendChapterNotification({
-    kind: "upload",
-    mode: body.data.mode,
-    fileCount: body.data.fileCount,
-  });
 }

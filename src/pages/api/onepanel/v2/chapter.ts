@@ -1,3 +1,4 @@
+import { waitUntil } from "@vercel/functions";
 import { type NextApiRequest, type NextApiResponse } from "next";
 import { z } from "zod";
 import { sendChapterNotification } from "../../../../lib/telegram-notification.mjs";
@@ -43,16 +44,17 @@ export default async function handler(
     });
     const responseBody = Buffer.from(await response.arrayBuffer());
     const contentType = response.headers.get("content-type");
+    if (response.ok) {
+      waitUntil(
+        sendChapterNotification({
+          kind: "url",
+          mode: body.data.segmentation_mode,
+          chapterUrl: body.data.chapter_url,
+        }),
+      );
+    }
     if (contentType) res.setHeader("Content-Type", contentType);
     res.status(response.status).send(responseBody);
-
-    if (response.ok) {
-      await sendChapterNotification({
-        kind: "url",
-        mode: body.data.segmentation_mode,
-        chapterUrl: body.data.chapter_url,
-      });
-    }
   } catch {
     res.status(502).json({ detail: "Could not reach the chapter API." });
   }
