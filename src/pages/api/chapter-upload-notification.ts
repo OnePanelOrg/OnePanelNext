@@ -7,7 +7,11 @@ import { segmentationModeSchema } from "../../lib/segmentation-modes.mjs";
 
 const requestSchema = z.object({
   fileCount: z.number().int().positive().max(1_000),
+  fileNames: z.array(z.string().min(1).max(1_024)).min(1).max(1_000),
+  chapterUrl: z.string().url().max(2_048),
   mode: segmentationModeSchema,
+}).refine((data) => data.fileNames.length === data.fileCount, {
+  message: "The file count must match the supplied file names.",
 });
 
 export default async function handler(
@@ -45,6 +49,8 @@ export default async function handler(
       kind: "upload",
       mode: body.data.mode,
       fileCount: body.data.fileCount,
+      fileNames: body.data.fileNames,
+      chapterUrl: body.data.chapterUrl,
     }),
   );
   res.status(204).end();

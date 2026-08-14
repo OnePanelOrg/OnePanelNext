@@ -16,14 +16,30 @@ test("formats URL submissions with their mode and URL", () => {
   );
 });
 
-test("formats uploads without exposing filenames", () => {
+test("formats successful uploads with filenames and the returned reader URL", () => {
   assert.equal(
     formatChapterNotification({
       kind: "upload",
       mode: "standard",
-      fileCount: 3,
+      fileCount: 1,
+      fileNames: ["one-piece-chapter-1123.cbz"],
+      chapterUrl: "https://www.onepanel.app/chapter/uploaded-chapter-hash",
     }),
-    "OnePanel chapter uploaded.\nMode: standard\nFiles: 3",
+    "OnePanel chapter uploaded successfully.\nMode: standard\nFiles: 1\nFile: one-piece-chapter-1123.cbz\nReader: https://www.onepanel.app/chapter/uploaded-chapter-hash",
+  );
+});
+
+test("limits the filenames shown in upload notifications", () => {
+  const fileNames = Array.from({ length: 12 }, (_, index) => `page-${index + 1}.png`);
+
+  assert.match(
+    formatChapterNotification({
+      kind: "upload",
+      mode: "standard",
+      fileCount: fileNames.length,
+      fileNames,
+    }),
+    /File names: page-1\.png, page-2\.png, page-3\.png, page-4\.png, page-5\.png, page-6\.png, page-7\.png, page-8\.png, page-9\.png, page-10\.png\n…and 2 more/,
   );
 });
 
