@@ -8,6 +8,7 @@ import PageRedactionDemo from "../components/demo/PageRedactionDemo";
 import Footer from "../components/Footer";
 import Header from "../components/Header";
 import { useAuth } from "../lib/auth";
+import { trackMarketingEvent } from "../lib/analytics";
 import { ui } from "../lib/theme";
 
 const copy = {
@@ -176,6 +177,35 @@ const Home: NextPage = () => {
         />
       </Head>
       <div className="flex min-h-screen flex-col overflow-x-hidden bg-paper text-ink">
+        <aside
+          aria-label="Create an account"
+          className="border-b-3 border-ink bg-marker text-ink"
+        >
+          <div
+            className={`${ui.container} flex min-h-10 items-center justify-center gap-x-3 px-3 py-2 text-center sm:min-h-0 sm:py-2.5`}
+          >
+            <span className="hidden font-mono text-[10px] font-bold uppercase tracking-[0.16em] sm:inline">
+              Before the next chapter drops
+            </span>
+            <span aria-hidden="true" className="hidden text-ink/40 sm:inline">
+              /
+            </span>
+            <span className="text-xs font-semibold leading-tight sm:text-sm">
+              Create a free account now. Uploads and Pro are ready when you are.
+            </span>
+            <Link
+              href="/sign-up"
+              onClick={() =>
+                trackMarketingEvent("signup_cta_clicked", {
+                  source: "landing_promo_banner",
+                })
+              }
+              className="shrink-0 border-b-2 border-ink font-mono text-[10px] font-bold uppercase tracking-[0.12em] hover:border-transparent sm:text-[11px]"
+            >
+              Sign up free <span aria-hidden="true">→</span>
+            </Link>
+          </div>
+        </aside>
         <Header />
         <main className="flex-grow">
           <section className={ui.rule}>
