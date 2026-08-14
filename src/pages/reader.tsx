@@ -216,7 +216,7 @@ const Reader: NextPage = () => {
         mode: "standard",
         source: "reader_page",
       });
-      await notifyChapterUpload(files.length, "standard", token);
+      await notifyChapterUpload(files, "standard", token, chapterHash);
       await router.push(`/chapter/${chapterHash}`);
     } catch (error) {
       if (controller.signal.aborted) return;
