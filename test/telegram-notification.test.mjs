@@ -5,14 +5,15 @@ import {
   sendChapterNotification,
 } from "../src/lib/telegram-notification.mjs";
 
-test("formats URL submissions with their mode and URL", () => {
+test("formats URL submissions with their source and reader URLs", () => {
   assert.equal(
     formatChapterNotification({
       kind: "url",
       mode: "standard",
-      chapterUrl: "https://example.com/chapter/12",
+      sourceUrl: "https://example.com/chapter/12",
+      chapterUrl: "https://www.onepanel.app/chapter/chapter-hash",
     }),
-    "OnePanel chapter URL submitted.\nMode: standard\nURL: https://example.com/chapter/12",
+    "OnePanel chapter URL submitted.\nMode: standard\nURL: https://example.com/chapter/12\nReader: https://www.onepanel.app/chapter/chapter-hash",
   );
 });
 
@@ -30,7 +31,10 @@ test("formats successful uploads with filenames and the returned reader URL", ()
 });
 
 test("limits the filenames shown in upload notifications", () => {
-  const fileNames = Array.from({ length: 12 }, (_, index) => `page-${index + 1}.png`);
+  const fileNames = Array.from(
+    { length: 12 },
+    (_, index) => `page-${index + 1}.png`,
+  );
 
   assert.match(
     formatChapterNotification({
@@ -49,7 +53,8 @@ test("logs Telegram API rejections without exposing credentials", async () => {
     {
       kind: "url",
       mode: "standard",
-      chapterUrl: "https://example.com/chapter/12",
+      sourceUrl: "https://example.com/chapter/12",
+      chapterUrl: "https://www.onepanel.app/chapter/chapter-hash",
     },
     {
       token: "secret-bot-token",
@@ -77,7 +82,10 @@ test("logs Telegram API rejections without exposing credentials", async () => {
       { status: 400, description: "Bad Request: chat not found" },
     ],
   ]);
-  assert.doesNotMatch(JSON.stringify(errors), /secret-bot-token|secret-chat-id/);
+  assert.doesNotMatch(
+    JSON.stringify(errors),
+    /secret-bot-token|secret-chat-id/,
+  );
 });
 
 test("logs a sanitized receipt for successful Telegram deliveries", async () => {
@@ -113,8 +121,16 @@ test("logs a sanitized receipt for successful Telegram deliveries", async () => 
   assert.deepEqual(messages, [
     [
       "Telegram chapter notification delivered.",
-      { status: 200, messageId: 42, chatType: "supergroup", chatIdSuffix: "7890" },
+      {
+        status: 200,
+        messageId: 42,
+        chatType: "supergroup",
+        chatIdSuffix: "7890",
+      },
     ],
   ]);
-  assert.doesNotMatch(JSON.stringify(messages), /secret-bot-token|1001234567890/);
+  assert.doesNotMatch(
+    JSON.stringify(messages),
+    /secret-bot-token|1001234567890/,
+  );
 });
