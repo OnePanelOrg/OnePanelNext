@@ -25,7 +25,8 @@ export function formatChapterNotification(event) {
     return [
       "OnePanel chapter URL submitted.",
       `Mode: ${event.mode}`,
-      `URL: ${event.chapterUrl}`,
+      `URL: ${event.sourceUrl}`,
+      ...(event.chapterUrl ? [`Reader: ${event.chapterUrl}`] : []),
     ].join("\n");
   }
 
