@@ -10,10 +10,11 @@ test("formats URL submissions with their source and reader URLs", () => {
     formatChapterNotification({
       kind: "url",
       mode: "standard",
+      userEmail: "reader@example.com",
       sourceUrl: "https://example.com/chapter/12",
       chapterUrl: "https://www.onepanel.app/chapter/chapter-hash",
     }),
-    "OnePanel chapter URL submitted.\nMode: standard\nURL: https://example.com/chapter/12\nReader: https://www.onepanel.app/chapter/chapter-hash",
+    "OnePanel chapter URL submitted.\nMode: standard\nEmail: reader@example.com\nURL: https://example.com/chapter/12\nReader: https://www.onepanel.app/chapter/chapter-hash",
   );
 });
 
@@ -22,11 +23,12 @@ test("formats successful uploads with filenames and the returned reader URL", ()
     formatChapterNotification({
       kind: "upload",
       mode: "standard",
+      userEmail: "reader@example.com",
       fileCount: 1,
       fileNames: ["one-piece-chapter-1123.cbz"],
       chapterUrl: "https://www.onepanel.app/chapter/uploaded-chapter-hash",
     }),
-    "OnePanel chapter uploaded successfully.\nMode: standard\nFiles: 1\nFile: one-piece-chapter-1123.cbz\nReader: https://www.onepanel.app/chapter/uploaded-chapter-hash",
+    "OnePanel chapter uploaded successfully.\nMode: standard\nEmail: reader@example.com\nFiles: 1\nFile: one-piece-chapter-1123.cbz\nReader: https://www.onepanel.app/chapter/uploaded-chapter-hash",
   );
 });
 
