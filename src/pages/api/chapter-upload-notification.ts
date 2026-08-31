@@ -2,7 +2,7 @@ import { verifyToken } from "@clerk/nextjs/server";
 import { waitUntil } from "@vercel/functions";
 import { type NextApiRequest, type NextApiResponse } from "next";
 import { z } from "zod";
-import { sendChapterNotification } from "../../lib/telegram-notification.mjs";
+import { sendChapterNotificationForUser } from "../../lib/authenticated-chapter-notification.mjs";
 import { segmentationModeSchema } from "../../lib/segmentation-modes.mjs";
 
 const requestSchema = z.object({
@@ -31,8 +31,10 @@ export default async function handler(
     return;
   }
 
+  let userId: string;
   try {
-    await verifyToken(token, { secretKey });
+    const payload = await verifyToken(token, { secretKey });
+    userId = payload.sub;
   } catch {
     res.status(401).json({ detail: "Authentication required." });
     return;
@@ -45,13 +47,16 @@ export default async function handler(
   }
 
   waitUntil(
-    sendChapterNotification({
-      kind: "upload",
-      mode: body.data.mode,
-      fileCount: body.data.fileCount,
-      fileNames: body.data.fileNames,
-      chapterUrl: body.data.chapterUrl,
-    }),
+    sendChapterNotificationForUser(
+      {
+        kind: "upload",
+        mode: body.data.mode,
+        fileCount: body.data.fileCount,
+        fileNames: body.data.fileNames,
+        chapterUrl: body.data.chapterUrl,
+      },
+      userId,
+    ),
   );
   res.status(204).end();
 }

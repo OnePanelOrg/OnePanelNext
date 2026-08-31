@@ -1,8 +1,8 @@
 import { waitUntil } from "@vercel/functions";
 import { type NextApiRequest, type NextApiResponse } from "next";
 import { z } from "zod";
+import { sendChapterNotificationForAuthorization } from "../../../../lib/authenticated-chapter-notification.mjs";
 import { createUrlChapterNotification } from "../../../../lib/chapter-notification.mjs";
-import { sendChapterNotification } from "../../../../lib/telegram-notification.mjs";
 import { segmentationModeSchema } from "../../../../lib/segmentation-modes.mjs";
 
 const requestSchema = z.object({
@@ -81,7 +81,12 @@ export default async function handler(
           })
         : null;
       if (notification) {
-        waitUntil(sendChapterNotification(notification));
+        waitUntil(
+          sendChapterNotificationForAuthorization(
+            notification,
+            req.headers.authorization,
+          ),
+        );
       }
     }
     if (contentType) res.setHeader("Content-Type", contentType);
