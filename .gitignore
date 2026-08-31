@@ -43,3 +43,6 @@ yarn-error.log*
 
 public/output.json
 .env*
+
+# local manual test fixtures
+/manual-test-files/
