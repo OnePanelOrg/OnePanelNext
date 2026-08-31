@@ -45,7 +45,7 @@ const mockAuth: AuthValue = {
   isSignedIn: false,
 };
 
-const READER_REDIRECT_URL = "/reader";
+const READER_REDIRECT_URL = "/";
 const SIGN_IN_URL = "/sign-in";
 const SIGN_UP_URL = "/sign-up";
 

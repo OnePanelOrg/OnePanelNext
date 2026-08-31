@@ -122,7 +122,7 @@ const Faq: NextPage = () => (
                 at a time.
               </p>
               <Link
-                href="/reader"
+                href="/#start-reader"
                 className="mt-6 inline-flex items-center justify-center bg-paper px-5 py-3 font-display text-base font-extrabold tracking-tight text-ink transition hover:bg-marker"
               >
                 Start reading free
