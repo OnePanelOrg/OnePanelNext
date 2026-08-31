@@ -40,7 +40,7 @@ const steps = [
 const ReaderCta = () => (
   <div className="mt-7 flex flex-col gap-3 sm:flex-row">
     <Show when="signed-out">
-      <Link href="/reader" className={ui.button}>
+      <Link href="/#start-reader" className={ui.button}>
         Start reading free
       </Link>
       <SignInButton>
@@ -48,7 +48,7 @@ const ReaderCta = () => (
       </SignInButton>
     </Show>
     <Show when="signed-in">
-      <Link href="/reader" className={ui.button}>
+      <Link href="/#start-reader" className={ui.button}>
         Open reader
       </Link>
     </Show>
@@ -204,7 +204,7 @@ const SpoilerFreeMangaReader: NextPage = () => (
             </p>
             <div className="mt-7 flex flex-col gap-3 sm:flex-row">
               <Link
-                href="/reader"
+                href="/#start-reader"
                 className="inline-flex items-center justify-center bg-paper px-5 py-3 font-display text-base font-extrabold tracking-tight text-ink transition hover:bg-marker"
               >
                 Start reading free

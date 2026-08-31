@@ -17,7 +17,7 @@ const Footer = () => {
           <Link href="/faq" className={footerLink}>
             FAQ
           </Link>
-          <Link href="/reader" className={footerLink}>
+          <Link href="/#start-reader" className={footerLink}>
             Upload a file
           </Link>
           <a

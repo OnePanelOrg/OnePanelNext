@@ -1,6 +1,5 @@
 User-agent: *
 Allow: /
-Disallow: /reader
 Disallow: /chapter/
 Disallow: /sign-in
 Disallow: /sign-up
