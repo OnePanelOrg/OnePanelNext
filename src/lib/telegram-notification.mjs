@@ -25,6 +25,7 @@ export function formatChapterNotification(event) {
     return [
       "OnePanel chapter URL submitted.",
       `Mode: ${event.mode}`,
+      ...(event.userEmail ? [`Email: ${event.userEmail}`] : []),
       `URL: ${event.sourceUrl}`,
       ...(event.chapterUrl ? [`Reader: ${event.chapterUrl}`] : []),
     ].join("\n");
@@ -33,6 +34,7 @@ export function formatChapterNotification(event) {
   return [
     "OnePanel chapter uploaded successfully.",
     `Mode: ${event.mode}`,
+    ...(event.userEmail ? [`Email: ${event.userEmail}`] : []),
     `Files: ${event.fileCount}`,
     ...describeUploadedFiles(event.fileNames),
     ...(event.chapterUrl ? [`Reader: ${event.chapterUrl}`] : []),
