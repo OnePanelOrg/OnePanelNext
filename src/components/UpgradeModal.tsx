@@ -78,7 +78,7 @@ export default function UpgradeModal({
               </button>
             ) : (
               <>
-                <SignUpButton forceRedirectUrl="/reader">
+                <SignUpButton forceRedirectUrl="/">
                   <button
                     type="button"
                     onClick={onAuthenticate}
@@ -87,7 +87,7 @@ export default function UpgradeModal({
                     Create account and continue
                   </button>
                 </SignUpButton>
-                <SignInButton forceRedirectUrl="/reader">
+                <SignInButton forceRedirectUrl="/">
                   <button
                     type="button"
                     onClick={onAuthenticate}

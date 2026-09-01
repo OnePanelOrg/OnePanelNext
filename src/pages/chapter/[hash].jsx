@@ -36,7 +36,8 @@ export default function Page() {
       setData(await getChapter(chapterHash, token));
     } catch (error) {
       const accountRequired = isChapterSignInRequired(error, isSignedIn);
-      const reuploadRequired = error instanceof ApiError && error.status === 409;
+      const reuploadRequired =
+        error instanceof ApiError && error.status === 409;
       setRequiresSignIn(accountRequired);
       setRequiresReupload(reuploadRequired);
       setError(
@@ -44,9 +45,9 @@ export default function Page() {
           ? "This GPT-5.6 chapter requires an account. Sign in to continue reading."
           : reuploadRequired
             ? "Uploaded chapters are session-only. Re-upload the source to read it again."
-          : error instanceof Error
-            ? error.message
-            : "Could not load the chapter.",
+            : error instanceof Error
+              ? error.message
+              : "Could not load the chapter.",
       );
     } finally {
       setLoading(false);
@@ -91,7 +92,7 @@ export default function Page() {
             {requiresReupload && (
               <button
                 type="button"
-                onClick={() => void router.push("/reader")}
+                onClick={() => void router.push("/#start-reader")}
                 className="border-3 border-paper px-5 py-3 font-display text-base font-extrabold text-paper transition hover:bg-paper hover:text-ink"
               >
                 Re-upload chapter

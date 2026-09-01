@@ -4,7 +4,7 @@ import test from "node:test";
 
 test("subscription-status failures do not render as composer errors", async () => {
   const source = await readFile(
-    new URL("../src/pages/reader.tsx", import.meta.url),
+    new URL("../src/components/ChapterLauncher.tsx", import.meta.url),
     "utf8",
   );
   const subscriptionLoader = source.slice(

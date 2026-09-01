@@ -1,19 +1,43 @@
 const TELEGRAM_API_ORIGIN = "https://api.telegram.org";
 const TELEGRAM_TIMEOUT_MS = 5_000;
+const MAX_FILENAMES_IN_NOTIFICATION = 10;
+const MAX_FILENAME_LENGTH = 120;
+
+function describeUploadedFiles(fileNames = []) {
+  const visibleNames = fileNames
+    .slice(0, MAX_FILENAMES_IN_NOTIFICATION)
+    .map((fileName) =>
+      fileName.length > MAX_FILENAME_LENGTH
+        ? `${fileName.slice(0, MAX_FILENAME_LENGTH - 1)}…`
+        : fileName,
+    );
+  if (visibleNames.length === 0) return [];
+
+  const remaining = fileNames.length - visibleNames.length;
+  return [
+    `File${fileNames.length === 1 ? "" : " names"}: ${visibleNames.join(", ")}`,
+    ...(remaining > 0 ? [`…and ${remaining} more`] : []),
+  ];
+}
 
 export function formatChapterNotification(event) {
   if (event.kind === "url") {
     return [
       "OnePanel chapter URL submitted.",
       `Mode: ${event.mode}`,
-      `URL: ${event.chapterUrl}`,
+      ...(event.userEmail ? [`Email: ${event.userEmail}`] : []),
+      `URL: ${event.sourceUrl}`,
+      ...(event.chapterUrl ? [`Reader: ${event.chapterUrl}`] : []),
     ].join("\n");
   }
 
   return [
-    "OnePanel chapter uploaded.",
+    "OnePanel chapter uploaded successfully.",
     `Mode: ${event.mode}`,
+    ...(event.userEmail ? [`Email: ${event.userEmail}`] : []),
     `Files: ${event.fileCount}`,
+    ...describeUploadedFiles(event.fileNames),
+    ...(event.chapterUrl ? [`Reader: ${event.chapterUrl}`] : []),
   ].join("\n");
 }
 

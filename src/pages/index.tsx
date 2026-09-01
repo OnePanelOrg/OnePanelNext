@@ -1,13 +1,14 @@
 import { type NextPage } from "next";
 import Head from "next/head";
 import Link from "next/link";
-import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
-import ChapterLinkForm from "../components/ChapterLinkForm";
+import ChapterLauncher from "../components/ChapterLauncher";
 import PageRedactionDemo from "../components/demo/PageRedactionDemo";
 import Footer from "../components/Footer";
 import Header from "../components/Header";
-import { useAuth } from "../lib/auth";
+import SourceRequestForm from "../components/SourceRequestForm";
+import { Show, useAuth } from "../lib/auth";
+import { trackMarketingEvent } from "../lib/analytics";
 import { ui } from "../lib/theme";
 
 const copy = {
@@ -68,7 +69,7 @@ const faqs = [
   },
   {
     q: "Which sources work?",
-    a: "OP Chapters and TCB One Piece Chapters today. If a source you read is missing, there is a request form inside the reader.",
+    a: "OP Chapters and TCB One Piece Chapters today. If a source you read is missing, use the request form below.",
   },
   {
     q: "Do you store the chapter?",
@@ -127,15 +128,8 @@ function Redactable({
 }
 
 const Home: NextPage = () => {
-  const router = useRouter();
-  const { isLoaded, isSignedIn } = useAuth();
+  const { isSignedIn } = useAuth();
   const [lifted, setLifted] = useState(false);
-
-  useEffect(() => {
-    if (isLoaded && isSignedIn) {
-      void router.replace("/reader");
-    }
-  }, [isLoaded, isSignedIn, router]);
 
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
@@ -176,36 +170,78 @@ const Home: NextPage = () => {
         />
       </Head>
       <div className="flex min-h-screen flex-col overflow-x-hidden bg-paper text-ink">
+        <Show when="signed-out">
+          <aside
+            aria-label="Create an account"
+            className="border-b-3 border-ink bg-marker text-ink"
+          >
+            <div
+              className={`${ui.container} flex min-h-10 items-center justify-center gap-x-3 px-3 py-2 text-center sm:min-h-0 sm:py-2.5`}
+            >
+              <span className="hidden font-mono text-[10px] font-bold uppercase tracking-[0.16em] sm:inline">
+                Before the next chapter drops
+              </span>
+              <span aria-hidden="true" className="hidden text-ink/40 sm:inline">
+                /
+              </span>
+              <span className="text-xs font-semibold leading-tight sm:text-sm">
+                Create a free account now. Uploads and Pro are ready when you
+                are.
+              </span>
+              <Link
+                href="/sign-up"
+                onClick={() =>
+                  trackMarketingEvent("signup_cta_clicked", {
+                    source: "landing_promo_banner",
+                  })
+                }
+                className="shrink-0 border-b-2 border-ink font-mono text-[10px] font-bold uppercase tracking-[0.12em] hover:border-transparent sm:text-[11px]"
+              >
+                Sign up free <span aria-hidden="true">→</span>
+              </Link>
+            </div>
+          </aside>
+        </Show>
         <Header />
         <main className="flex-grow">
           <section className={ui.rule}>
             <div
-              className={`${ui.container} grid gap-12 py-12 lg:grid-cols-[1.1fr_0.9fr] lg:items-start lg:gap-16 lg:py-20`}
+              className={`${ui.container} grid gap-10 py-10 lg:grid-cols-[minmax(0,3fr)_minmax(18rem,2fr)] lg:items-start lg:gap-12 lg:py-16`}
             >
               <div>
-                <p className={ui.eyebrow}>{copy.eyebrow}</p>
-                <h1 className={`mt-5 ${ui.h1}`}>
-                  {copy.headlineStart}{" "}
-                  <Redactable lifted={lifted}>
-                    {copy.headlineRedacted}
-                  </Redactable>{" "}
-                  {copy.headlineEnd}
-                </h1>
-                <p className={`mt-6 max-w-xl ${ui.lead}`}>{copy.sub}</p>
-                <div className="mt-9 max-w-xl">
-                  <ChapterLinkForm source="landing_hero" />
+                {!isSignedIn ? (
+                  <>
+                    <p className={ui.eyebrow}>{copy.eyebrow}</p>
+                    <h1 className={`mt-4 ${ui.h1}`}>
+                      {copy.headlineStart}{" "}
+                      <Redactable lifted={lifted}>
+                        {copy.headlineRedacted}
+                      </Redactable>{" "}
+                      {copy.headlineEnd}
+                    </h1>
+                    <p className={`mt-5 max-w-2xl ${ui.lead}`}>
+                      <span className="sm:hidden">
+                        OnePanel hides future panels so every reveal lands in
+                        order.
+                      </span>
+                      <span className="hidden sm:inline">{copy.sub}</span>
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <p className={ui.eyebrow}>Reader</p>
+                    <h1 className={`mt-3 ${ui.h2}`}>Start a chapter.</h1>
+                    <p className={`mt-3 max-w-xl ${ui.prose}`}>
+                      Paste a link or add the comic files you already have.
+                    </p>
+                  </>
+                )}
+                <div id="start-reader" className={isSignedIn ? "mt-6" : "mt-8"}>
+                  <ChapterLauncher />
                 </div>
-                <p
-                  className={`mt-6 max-w-xl border-t-3 border-ink pt-4 ${ui.micro} leading-relaxed`}
-                >
-                  Works with OP Chapters and TCB · Arrow keys or tap ·{" "}
-                  <Link href="/reader" className="underline hover:text-ink">
-                    Or upload your own file
-                  </Link>
-                </p>
               </div>
 
-              <div className="lg:sticky lg:top-8">
+              <div className="lg:sticky lg:top-6">
                 <PageRedactionDemo />
               </div>
             </div>
@@ -306,6 +342,7 @@ const Home: NextPage = () => {
                   Read the full FAQ
                 </Link>
               </p>
+              <SourceRequestForm />
             </div>
           </section>
 
@@ -314,9 +351,9 @@ const Home: NextPage = () => {
               <h2 className="font-display text-[clamp(2rem,5vw,3.25rem)] font-extrabold leading-[0.98] tracking-[-0.035em]">
                 Read the next chapter in the order it was drawn.
               </h2>
-              <div className="mt-9 bg-paper p-5 text-left text-ink sm:p-7">
-                <ChapterLinkForm source="landing_footer" />
-              </div>
+              <Link href="#start-reader" className={`mt-9 ${ui.button}`}>
+                Start a chapter
+              </Link>
             </div>
           </section>
         </main>

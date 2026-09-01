@@ -278,9 +278,10 @@ export function createUploadedChapter(
 }
 
 export async function notifyChapterUpload(
-  fileCount: number,
+  files: File[],
   mode: SegmentationMode,
   token: string,
+  chapterHash: string,
 ): Promise<void> {
   try {
     await fetch("/api/chapter-upload-notification", {
@@ -289,7 +290,15 @@ export async function notifyChapterUpload(
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ fileCount, mode }),
+      body: JSON.stringify({
+        fileCount: files.length,
+        fileNames: files.map((file) => file.name),
+        mode,
+        chapterUrl: new URL(
+          `/chapter/${encodeURIComponent(chapterHash)}`,
+          window.location.origin,
+        ).href,
+      }),
     });
   } catch {
     // Notifications are operational telemetry and must not break the reader.

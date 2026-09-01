@@ -5,25 +5,47 @@ import {
   sendChapterNotification,
 } from "../src/lib/telegram-notification.mjs";
 
-test("formats URL submissions with their mode and URL", () => {
+test("formats URL submissions with their source and reader URLs", () => {
   assert.equal(
     formatChapterNotification({
       kind: "url",
       mode: "standard",
-      chapterUrl: "https://example.com/chapter/12",
+      userEmail: "reader@example.com",
+      sourceUrl: "https://example.com/chapter/12",
+      chapterUrl: "https://www.onepanel.app/chapter/chapter-hash",
     }),
-    "OnePanel chapter URL submitted.\nMode: standard\nURL: https://example.com/chapter/12",
+    "OnePanel chapter URL submitted.\nMode: standard\nEmail: reader@example.com\nURL: https://example.com/chapter/12\nReader: https://www.onepanel.app/chapter/chapter-hash",
   );
 });
 
-test("formats uploads without exposing filenames", () => {
+test("formats successful uploads with filenames and the returned reader URL", () => {
   assert.equal(
     formatChapterNotification({
       kind: "upload",
       mode: "standard",
-      fileCount: 3,
+      userEmail: "reader@example.com",
+      fileCount: 1,
+      fileNames: ["one-piece-chapter-1123.cbz"],
+      chapterUrl: "https://www.onepanel.app/chapter/uploaded-chapter-hash",
     }),
-    "OnePanel chapter uploaded.\nMode: standard\nFiles: 3",
+    "OnePanel chapter uploaded successfully.\nMode: standard\nEmail: reader@example.com\nFiles: 1\nFile: one-piece-chapter-1123.cbz\nReader: https://www.onepanel.app/chapter/uploaded-chapter-hash",
+  );
+});
+
+test("limits the filenames shown in upload notifications", () => {
+  const fileNames = Array.from(
+    { length: 12 },
+    (_, index) => `page-${index + 1}.png`,
+  );
+
+  assert.match(
+    formatChapterNotification({
+      kind: "upload",
+      mode: "standard",
+      fileCount: fileNames.length,
+      fileNames,
+    }),
+    /File names: page-1\.png, page-2\.png, page-3\.png, page-4\.png, page-5\.png, page-6\.png, page-7\.png, page-8\.png, page-9\.png, page-10\.png\n…and 2 more/,
   );
 });
 
@@ -33,7 +55,8 @@ test("logs Telegram API rejections without exposing credentials", async () => {
     {
       kind: "url",
       mode: "standard",
-      chapterUrl: "https://example.com/chapter/12",
+      sourceUrl: "https://example.com/chapter/12",
+      chapterUrl: "https://www.onepanel.app/chapter/chapter-hash",
     },
     {
       token: "secret-bot-token",
@@ -61,7 +84,10 @@ test("logs Telegram API rejections without exposing credentials", async () => {
       { status: 400, description: "Bad Request: chat not found" },
     ],
   ]);
-  assert.doesNotMatch(JSON.stringify(errors), /secret-bot-token|secret-chat-id/);
+  assert.doesNotMatch(
+    JSON.stringify(errors),
+    /secret-bot-token|secret-chat-id/,
+  );
 });
 
 test("logs a sanitized receipt for successful Telegram deliveries", async () => {
@@ -97,8 +123,16 @@ test("logs a sanitized receipt for successful Telegram deliveries", async () => 
   assert.deepEqual(messages, [
     [
       "Telegram chapter notification delivered.",
-      { status: 200, messageId: 42, chatType: "supergroup", chatIdSuffix: "7890" },
+      {
+        status: 200,
+        messageId: 42,
+        chatType: "supergroup",
+        chatIdSuffix: "7890",
+      },
     ],
   ]);
-  assert.doesNotMatch(JSON.stringify(messages), /secret-bot-token|1001234567890/);
+  assert.doesNotMatch(
+    JSON.stringify(messages),
+    /secret-bot-token|1001234567890/,
+  );
 });
