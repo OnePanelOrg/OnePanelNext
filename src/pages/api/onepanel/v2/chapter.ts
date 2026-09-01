@@ -5,6 +5,8 @@ import { sendChapterNotificationForAuthorization } from "../../../../lib/authent
 import { createUrlChapterNotification } from "../../../../lib/chapter-notification.mjs";
 import { segmentationModeSchema } from "../../../../lib/segmentation-modes.mjs";
 
+export const maxDuration = 60;
+
 const requestSchema = z.object({
   chapter_url: z.string().url(),
   segmentation_mode: segmentationModeSchema,

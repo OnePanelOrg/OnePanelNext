@@ -25,3 +25,12 @@ test("chapter routes register Telegram work before completing the response", asy
     assert.doesNotMatch(source, /await sendChapterNotification/);
   }
 });
+
+test("chapter proxy allows enough time for synchronous extraction", async () => {
+  const source = await readFile(
+    "src/pages/api/onepanel/v2/chapter.ts",
+    "utf8",
+  );
+
+  assert.match(source, /export const maxDuration = 60;/);
+});
